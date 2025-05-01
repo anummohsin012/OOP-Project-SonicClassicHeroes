@@ -8,7 +8,7 @@
 using namespace sf;
 using namespace std;
 
-int screen_x = 1200;
+int screen_x = 1200; //hihihi
 int screen_y = 900;
 
 // prototypes 

@@ -1,0 +1,8 @@
+# Ignore Visual Studio files
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.db
+*.bak

@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\LENOVO\\Documents\\FAST NU\\Semester 2\\FAST OOP S2\\Project\\Project\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{237A21A8-9C91-44C9-A850-AD32B389FD32}|Project.vcxproj|C:\\Users\\LENOVO\\Documents\\FAST NU\\Semester 2\\FAST OOP S2\\Project\\Project\\Source.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{237A21A8-9C91-44C9-A850-AD32B389FD32}|Project.vcxproj|solutionrelative:Source.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 297,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Source.cpp",
+              "DocumentMoniker": "C:\\Users\\LENOVO\\Documents\\FAST NU\\Semester 2\\FAST OOP S2\\Project\\Project\\Source.cpp",
+              "RelativeDocumentMoniker": "Source.cpp",
+              "ToolTip": "C:\\Users\\LENOVO\\Documents\\FAST NU\\Semester 2\\FAST OOP S2\\Project\\Project\\Source.cpp",
+              "RelativeToolTip": "Source.cpp",
+              "ViewState": "AgIAAMYAAAAAAAAAAAAAAM0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-04-27T05:09:55.362Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

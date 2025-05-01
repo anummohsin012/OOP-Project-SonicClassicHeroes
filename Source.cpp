@@ -1,3 +1,6 @@
+//Anum Mohsin i240756
+//Muhammad Usman i240528
+//Project
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -7,7 +10,7 @@
 
 using namespace sf;
 using namespace std;
-int screen_x = 1200; //hihihi hiii
+int screen_x = 1200; 
 int screen_y = 900;
 
 // prototypes 

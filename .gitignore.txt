@@ -6,3 +6,6 @@
 *.suo
 *.db
 *.bak
+*.ipch
+*.sdf
+*.VC.db

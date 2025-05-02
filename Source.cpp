@@ -13,7 +13,7 @@ using namespace std;
 int screen_x = 1200; 
 int screen_y = 900;
 
-// prototypes 
+// prototypes ADAD
 void player_gravity(char** lvl, float& offset_y, float& velocityY, bool& onGround, float& gravity, float& terminal_Velocity, int& hit_box_factor_x, int& hit_box_factor_y, float& player_x, float& player_y, const int cell_size, int& Pheight, int& Pwidth);
 
 void draw_player(RenderWindow& window, Sprite& LstillSprite, float player_x, float player_y);
@@ -21,7 +21,9 @@ void draw_player(RenderWindow& window, Sprite& LstillSprite, float player_x, flo
 void display_level(RenderWindow& window, const int height, const int width, char** lvl, Sprite& wallSprite1, const int cell_size);
 
 int main()
-{
+{	
+	DDSDS;
+	usman;
 
 	RenderWindow window(VideoMode(screen_x, screen_y), "Sonic the Hedgehog-OOP", Style::Close);
 	window.setVerticalSyncEnabled(true);

@@ -21,7 +21,8 @@ void draw_player(RenderWindow& window, Sprite& LstillSprite, float player_x, flo
 void display_level(RenderWindow& window, const int height, const int width, char** lvl, Sprite& wallSprite1, const int cell_size);
 
 int main()
-{
+{	
+	DDSDS;
 
 	RenderWindow window(VideoMode(screen_x, screen_y), "Sonic the Hedgehog-OOP", Style::Close);
 	window.setVerticalSyncEnabled(true);

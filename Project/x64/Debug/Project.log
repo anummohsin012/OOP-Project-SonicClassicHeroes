@@ -1,1 +1,11 @@
-﻿  Project.vcxproj -> C:\Users\LENOVO\Documents\FAST NU\Semester 2\FAST OOP S2\Project\Project\x64\Debug\Project.exe
+﻿  player.cpp
+  Source.cpp
+  Generating Code...
+C:\Users\LENOVO\Documents\FAST NU\Semester 2\FAST OOP S2\Project\Project\Source.cpp(94,21): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\LENOVO\Documents\FAST NU\Semester 2\FAST OOP S2\Project\Project\Source.cpp(103,14): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\LENOVO\Documents\FAST NU\Semester 2\FAST OOP S2\Project\Project\Source.cpp(104,13): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\LENOVO\Documents\FAST NU\Semester 2\FAST OOP S2\Project\Project\Source.cpp(108,23): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\LENOVO\Documents\FAST NU\Semester 2\FAST OOP S2\Project\Project\Source.cpp(109,23): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\LENOVO\Documents\FAST NU\Semester 2\FAST OOP S2\Project\Project\Source.cpp(203,46): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\LENOVO\Documents\FAST NU\Semester 2\FAST OOP S2\Project\Project\Source.cpp(203,31): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Project.vcxproj -> C:\Users\LENOVO\Documents\FAST NU\Semester 2\FAST OOP S2\Project\Project\x64\Debug\Project.exe

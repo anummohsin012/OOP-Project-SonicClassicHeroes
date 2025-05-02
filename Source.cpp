@@ -13,7 +13,7 @@ using namespace sf;
 using namespace std;
 int screen_x = 1200; 
 int screen_y = 900;
-
+//changes
 // prototypes ADAD
 void player_gravity(char** lvl, float& offset_y, float& velocityY, bool& onGround, float& gravity, float& terminal_Velocity, int& hit_box_factor_x, int& hit_box_factor_y, float& player_x, float& player_y, const int cell_size, int& Pheight, int& Pwidth);
 
@@ -40,7 +40,7 @@ int main()
 	// Uppercase for not interactable background accessories
 
 	// C is for crystals
-	sasdsd;
+	
 
 	const int cell_size = 64;
 	const int height = 14;

@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <SFML/Window.hpp>
+#include "player.cpp"
 
 using namespace sf;
 using namespace std;
@@ -22,8 +23,7 @@ void display_level(RenderWindow& window, const int height, const int width, char
 
 int main()
 {	
-	DDSDS;
-
+	
 	RenderWindow window(VideoMode(screen_x, screen_y), "Sonic the Hedgehog-OOP", Style::Close);
 	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(60);
@@ -40,11 +40,12 @@ int main()
 	// Uppercase for not interactable background accessories
 
 	// C is for crystals
+	sasdsd;
 
 	const int cell_size = 64;
 	const int height = 14;
 	const int width = 110;
-
+	
 	char** lvl = NULL;
 
 	Texture wallTex1;

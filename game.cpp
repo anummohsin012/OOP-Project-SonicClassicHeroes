@@ -1,4 +1,5 @@
 using namespace std;
+#include "menu.cpp"
 class ScoreBoard {
 	int score;
 public:

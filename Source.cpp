@@ -56,7 +56,7 @@ int main()
 				}
 
 				else if (menu.getoptionopen()) {
-					menu.draw(window);
+					menu.draw(window,900,1200);
 					menu.voldisplay();
 					if (event.key.code == sf::Keyboard::Up)
 						menu.volset(1);
@@ -75,7 +75,7 @@ int main()
 
 
 		window.clear();
-		menu.draw(window);
+		menu.draw(window,900,1200);
 		window.display();
 	}
 	/////////////////////////////////////////////////////////////////

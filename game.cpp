@@ -19,5 +19,13 @@ public:
 class Game {
 private:
 	ScoreBoard Score;
-
+	Game(){}
+	static Game* instance;
+public:
+	static Game* startGame() {
+		if (!instance) {
+			instance = new Game();
+		}
+		return instance;
+	}
 };

@@ -9,6 +9,7 @@
 #include <SFML/Window.hpp>
 #include "player.cpp"
 #include "game.cpp"
+#include "menu.cpp"
 
 using namespace sf;
 using namespace std;
@@ -25,8 +26,58 @@ int main()
 {	
 
 	RenderWindow window(VideoMode(screen_x, screen_y), "Sonic the Hedgehog-OOP", Style::Close);
-	window.setVerticalSyncEnabled(true);
+	
 	window.setFramerateLimit(60);
+	Menu menu(900,1200);
+
+	while (window.isOpen()) {
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == Event::Closed)
+				window.close();
+
+			if (event.type == Event::KeyPressed) {
+				if (!menu.getoptionopen()) {
+					if (event.key.code == sf::Keyboard::Up) {
+
+						menu.hower(-1);
+					}
+					else if (event.key.code == sf::Keyboard::Down) {
+						menu.hower(1);
+					}
+					else if (event.key.code == sf::Keyboard::Enter) {
+						if (menu.getindex() == 4) {
+							window.close();
+						}
+						else {
+							menu.optionselected(menu.getindex());
+						}
+					}
+				}
+
+				else if (menu.getoptionopen()) {
+					menu.draw(window);
+					menu.voldisplay();
+					if (event.key.code == sf::Keyboard::Up)
+						menu.volset(1);
+					else if (event.key.code == sf::Keyboard::Down)
+						menu.volset(0);
+
+					else if (event.key.code == sf::Keyboard::Escape)
+						menu.toggleing();
+				}
+			}
+
+
+
+
+		}
+
+
+		window.clear();
+		menu.draw(window);
+		window.display();
+	}
 	/////////////////////////////////////////////////////////////////
 	// a cell is 64 by 64 pixels
 

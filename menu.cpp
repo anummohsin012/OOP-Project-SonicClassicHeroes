@@ -24,7 +24,7 @@ private:
 	SoundBuffer hoversb;
 
 public:
-	Menu(float height, float width) : optionsopen(false), index(0), volumelevel(0) {
+	Menu(int height, int width) : optionsopen(false), index(0), volumelevel(0) {
 		if (!font.loadFromFile("font/arial.ttf")) {
 			cout << "Error: Could not load font!" << endl;
 			
@@ -40,11 +40,11 @@ public:
 		title.setStyle(Text::Bold);
 		title.setCharacterSize(60);
 		title.setFillColor(Color::Yellow);
-		title.setPosition(width / 4, height / 10);
+		title.setPosition(width , height/6) ;
 		vol.setFont(font);
 		vol.setCharacterSize(30);
 		vol.setFillColor(sf::Color::Cyan);
-		vol.setPosition(width / 3, height - 150);
+		vol.setPosition(width / 2, height /4);
 		voldisplay();
 
 		menumus.openFromFile("Data/labrynth.ogg");
@@ -70,7 +70,7 @@ public:
 	
 	}
 
-	void draw(sf::RenderWindow& window) {
+	void draw(sf::RenderWindow& window, int height, int width) {
 		window.draw(menusp); 
 
 		if (!optionsopen) {
@@ -84,12 +84,12 @@ public:
 			optTitle.setString("Options");
 			optTitle.setCharacterSize(50);
 			optTitle.setFillColor(Color::Green);
-			optTitle.setPosition(300, 100);
+			optTitle.setPosition(500, 200);
 
 			vol.setFont(font);  
 			vol.setCharacterSize(30);
 			vol.setFillColor(Color::Cyan);
-			vol.setPosition(300, 250);
+			vol.setPosition(width/2,height/4);
 
 
 
@@ -176,6 +176,5 @@ public:
 
 	
 };
-
 
 

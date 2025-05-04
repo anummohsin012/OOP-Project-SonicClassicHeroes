@@ -40,7 +40,7 @@ public:
 		title.setStyle(Text::Bold);
 		title.setCharacterSize(60);
 		title.setFillColor(Color::Yellow);
-		title.setPosition(width/2 - 250, height/6) ;
+		title.setPosition(width/2-100 , height/6) ;
 		vol.setFont(font);
 		vol.setCharacterSize(30);
 		vol.setFillColor(sf::Color::Cyan);

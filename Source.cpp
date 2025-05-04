@@ -9,7 +9,7 @@
 #include <SFML/Window.hpp>
 #include "player.cpp"
 #include "game.cpp"
-#include "menu.cpp"
+//#include "menu.cpp"
 
 using namespace sf;
 using namespace std;

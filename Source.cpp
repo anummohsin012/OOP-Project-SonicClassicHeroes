@@ -28,7 +28,7 @@ int main()
 	RenderWindow window(VideoMode(screen_x, screen_y), "Sonic the Hedgehog-OOP", Style::Close);
 	
 	window.setFramerateLimit(60);
-	Menu menu(900,1200);
+	Menu menu(1200,900);
 
 	while (window.isOpen()) {
 		sf::Event event;

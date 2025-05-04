@@ -39,7 +39,6 @@ public:
 	virtual void moveLeft() = 0;
 	virtual void jump() = 0;
 	virtual void useSpecialAbility() = 0;
-	virtual ~Player(){}
 
 	//functions where we apply physics
 	virtual void updatePhysics() 
@@ -66,6 +65,16 @@ public:
 	{ 
 		velocity_x = vx; 
 	}
+	void setYposition(float y)
+	{
+		player_y = y;
+	}
+	virtual ~Player() = default;
+	float getYPosition() const { return player_y; }
+	void setYPosition(float y) { player_y = y; }
+	void setOnGround(bool state) { onground = state; }
+	void setVelocityY(float vy) { velocity_y = vy; }
+	const Sprite& getSprite() const { return sprite; }
 
 };
 
@@ -84,11 +93,11 @@ public:
 	{
 		idleRight.loadFromFile("Data/0right_still.png");
 		idleLeft.loadFromFile("Data/0left_still.png");
-		runRight.loadFromFile("Data/0right_run.png");
-		runLeft.loadFromFile("Data/0left_run.png");
-		jumpRight.loadFromFile("Data/0up_R.png");
-		jumpLeft.loadFromFile("Data/0up_L.png");
-		special.loadFromFile("Data/0right_run_special.png");
+		runRight.loadFromFile("Data/0jog_right.png");
+		runLeft.loadFromFile("Data/0jog_left.png");
+		jumpRight.loadFromFile("Data/0upR.png");
+		jumpLeft.loadFromFile("Data/0upL.png");
+		special.loadFromFile("Data/0right_run.png");
 	}
 
 	const Texture& getTexture(bool isMoving, bool isJumping, bool isFacingRight, bool isSpecial) const {
@@ -116,21 +125,19 @@ public:
 	{
 		abilityTime = 15.0f;  // eans the ability would last 15 secinds
 		abilityIsActive = false;
-		texture.loadFromFile("Data/0right_still.png");
-		sprite.setTexture(texture);
 		velocity_x += acceleration;
 		if (velocity_x > speed) //terminal velocity reached
 			velocity_x = speed;
 
 		setSprite();
 		sprite.setTextureRect(IntRect(0,0,40,40));
+		sprite.setScale(2.5f, 2.5f);
 	}
 
 	void setSprite() 
 	{
 		const Texture& currentTex = spriteManager.getTexture(moving,jumping,facingRight,boostActive);
 		sprite.setTexture(currentTex);
-		sprite.setTextureRect(IntRect(40, 40, 40, 40));
 	}
 	virtual void moveRight() override
 	{
@@ -199,6 +206,7 @@ public:
 			setSprite();
 		}
 	}
+	virtual ~Sonic() override = default;
 
 };
 
@@ -249,6 +257,7 @@ public:
 		const Texture& currentTex = spriteManager.getTexture(moving, jumping, facingRight, flying);
 		sprite.setTexture(currentTex);
 		sprite.setTextureRect(IntRect(0, 0, 40, 40));
+		sprite.setScale(2.5f, 2.5f);
 	}
 	virtual void moveRight() override
 	{
@@ -316,6 +325,7 @@ public:
 			setSprite();
 		}
 	}
+	virtual ~Tails() override = default;
 };
 
 
@@ -365,6 +375,7 @@ bool facingRight;
 			const Texture& currentTex = spriteManager.getTexture(moving, jumping, facingRight, invincible);
 			sprite.setTexture(currentTex);
 			sprite.setTextureRect(IntRect(0, 0, 40, 40));
+			sprite.setScale(2.5f, 2.5f);
 		}
 		virtual void moveRight() override
 		{
@@ -415,10 +426,22 @@ bool facingRight;
 				}
 			}
 		}
+		virtual void updatePhysics() override
+		{
+			Player::updatePhysics(); //for returning to ground after jumping
+
+			if (onground)
+			{
+				jumping = false;
+				moving = (velocity_x != 0); //dependant on if theyre moving or not
+				setSprite();
+			}
+		}
 		virtual void setLeader(bool l)
 		{
 			isTheLeader = l;
 		}
+		virtual ~Knuckles() override = default;
 };
 class PlayerFactory {
 public:
@@ -452,48 +475,57 @@ public:
 	void updateFollowers()
 	{
 		Player& leader = *players[currentPlayer];
+		float leader_x = leader.getXposition();
+		float leader_y = leader.getYPosition();
 
 		for (int i = 0;i < 3;i++)
 		{
 			if (i == currentPlayer)
 				continue; //we dont want to implement the followers logic on the leading character
+			
 			Player* follower = players[i]; //set as a follower
-			//set on the direction of following
-			float leaderDirection = (leader.getVelocityX() > 0) ? 1.0f : -1.0f; //positive means right 
-			//making sure the followers stay 50px behind the leader
-			float targetX = leader.getXposition() + (leaderDirection * -50.0f);
-			float dx = targetX - follower->getXposition();
-			float followSpeed = follower->getSpeed() * 0.5f; //the speed of followers will also be 50 percent of the original to make them slow
+			float follower_x = follower->getXposition();
+			float displacement = leader_x - follower_x;
 
-			//dealing with edge cases and setting the velocities
-			if (dx > 0) //for moving towards leader
+			//making sure te follwoers are alaways atleast 50px behind leader
+			if (displacement > 60.0f)  
 			{
-				float desiredSpeed = dx * 0.15f;
-				if (desiredSpeed > followSpeed)
-				{
-					follower->setVelocityX(followSpeed); //if our desried speech is gereater than the max follower speed set
-				}
-				else
-				{
-					follower->setVelocityX(desiredSpeed);
-				}
+				follower->moveRight(); 
 			}
-			else if (dx < 0) //moving back to leader
+			else if (displacement < 40.0f) 
 			{
-				float desiredSpeed = dx * 0.15f;
-				if (desiredSpeed < -followSpeed)
-				{
-					follower->setVelocityX(-followSpeed);
-				}
-				else
-				{
-					follower->setVelocityX(desiredSpeed); // when desired speech is larger for quick replacemnt
-				}
+				follower->moveLeft(); 
 			}
+			else
+			{
+				follower->setVelocityX(0); 
+			}
+			//applying jumping logic for follower
+
+			float verticalDifference = leader.getYPosition() - follower->getYPosition();
+
+			if (verticalDifference < -30.0f) 
+			{
+				follower->jump(); //kept a check of 30 px vertically, if 30 px difference then the follower also jumps agfter leader
+			}
+
 		}
 
 	}
-
+	~PlayerManager() {
+		for (int i = 0; i < 3; ++i) 
+		{
+			delete players[i];
+		}
+	}
+	Player* getLeader() const 
+	{ 
+		return players[currentPlayer]; 
+	}
+	Player* getPlayer(int i) const 
+	{ 
+		return players[i]; 
+	}
 	void changePlayer()
 	{
 		players[currentPlayer]->setLeader(false);
@@ -507,3 +539,83 @@ public:
 	//	return *players[currentPlayer];
 	//}
 };
+
+
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+
+using namespace sf;
+
+//int main()
+//{
+//	// Create game window
+//	RenderWindow window(VideoMode(1280, 720), "Character Test");
+//	window.setFramerateLimit(60);
+//
+//	PlayerFactory factory;
+//	PlayerManager manager(factory);
+//
+//	Event ev;
+//
+//	while (window.isOpen())
+//	{
+//		while (window.pollEvent(ev))
+//		{
+//			if (ev.type == Event::Closed)
+//				window.close();
+//			if (ev.type == Event::KeyPressed)
+//			{
+//				if (ev.key.code == Keyboard::Tab)
+//				{
+//					manager.changePlayer(); // Switch character
+//				}
+//			}
+//		}
+//
+//		// Input for leader only
+//		if (Keyboard::isKeyPressed(Keyboard::Right))
+//			manager.getLeader()->moveRight();
+//		else if (Keyboard::isKeyPressed(Keyboard::Left))
+//			manager.getLeader()->moveLeft();
+//		else
+//			manager.getLeader()->setVelocityX(0); // Stop if no key pressed
+//
+//		if (Keyboard::isKeyPressed(Keyboard::Space))
+//			manager.getLeader()->jump();
+//
+//		if (Keyboard::isKeyPressed(Keyboard::LShift))
+//			manager.getLeader()->useSpecialAbility();
+//
+//		// Update all players' physics
+//		for (int i = 0; i < 3; ++i)
+//		{
+//			manager.getPlayer(i)->updatePhysics();
+//
+//			// Floor collision for each
+//			if (manager.getPlayer(i)->getYPosition() >= 600)
+//			{
+//				manager.getPlayer(i)->setYPosition(600);
+//				manager.getPlayer(i)->setVelocityY(0);
+//				manager.getPlayer(i)->setOnGround(true);
+//			}
+//		}
+//
+//		// Update followers logic (sets velocity)
+//		manager.updateFollowers();
+//
+//		// Rendering
+//		window.clear(Color::Black);
+//		for (int i = 0; i < 3; ++i)
+//		{
+//			const Sprite& sprite = manager.getPlayer(i)->getSprite();
+//			Sprite s = sprite;
+//			s.setPosition(manager.getPlayer(i)->getXposition(), manager.getPlayer(i)->getYPosition());
+//			window.draw(s);
+//		}
+//		window.display();
+//	}
+//
+//
+//	return 0;
+//}
+

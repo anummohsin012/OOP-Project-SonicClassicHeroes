@@ -70,11 +70,34 @@ public:
 		player_y = y;
 	}
 	virtual ~Player() = default;
-	float getYPosition() const { return player_y; }
-	void setYPosition(float y) { player_y = y; }
-	void setOnGround(bool state) { onground = state; }
-	void setVelocityY(float vy) { velocity_y = vy; }
-	const Sprite& getSprite() const { return sprite; }
+	float getYPosition() const 
+	{ 
+		return player_y; 
+	}
+	void setYPosition(float y) 
+	{ 
+		player_y = y; 
+	}
+	void setOnGround(bool state) 
+	{ 
+		onground = state; 
+	}
+	void setVelocityY(float vy) 
+	{ 
+		velocity_y = vy; 
+	}
+	const Sprite& getSprite() const 
+	{ 
+		return sprite; 
+	}
+	void respawn(float leader_x, float leader_y) 
+	{
+		player_x = leader_x + 50.f; //follower spawns next to leader as according to original logic
+		player_y = leader_y;
+		velocity_x = 0;
+		velocity_y = 0;
+		onground = true;
+	}
 
 };
 
@@ -172,7 +195,7 @@ public:
 			setSprite();
 		}
 	}
-	virtual void useSpecialAbility() override
+	virtual void useSpecialAbility() override //NOTE TO SELF: FIX THE CLOCK AND SPRITE FOR SONIC AND KNUCKLES  !!!!!!!!!!!!!!!1
 	{
 		if (!boostActive) 
 		{
@@ -186,8 +209,9 @@ public:
 			// it disablea after 15 seconds
 			if (abilityClock.getElapsedTime().asSeconds() >= 15.f) 
 			{
-				speed -= 4;
+				speed = 18;
 				boostActive = false;
+				setSprite();
 			}
 		}
 	}
@@ -250,8 +274,10 @@ class Tails : public Player {
 	bool moving;
 	bool jumping;
 	bool facingRight;
+	float flight_y;
+	bool wasFlying;
 public:
-	Tails(float x, float y) : Player(10,0.3, x, y, -15, 0.8), flying(false), moving(false), jumping(false), facingRight(true) {}
+	Tails(float x, float y) : Player(10,0.3, x, y, -15, 0.8), flying(false), moving(false), jumping(false), facingRight(true), wasFlying(false) {}
 	void setSprite()
 	{
 		const Texture& currentTex = spriteManager.getTexture(moving, jumping, facingRight, flying);
@@ -295,19 +321,11 @@ public:
 	{
 		if (!flying) 
 		{
+			flight_y = player_y;
 			velocity_y = -5;
 			flightTime.restart();
 			flying = true;
 			setSprite();
-		}
-		else 
-		{//manual table states 7 seconds while text states 4 seconds, impkemtned the 7s flight enhancement
-			// stops flying after 7 seconds
-			if (flightTime.getElapsedTime().asSeconds() >= 7.f) 
-			{
-				flying = false;
-				setSprite();
-			}
 		}
 	}
 	virtual void setLeader(bool l)
@@ -316,12 +334,42 @@ public:
 	}
 	virtual void updatePhysics() override 
 	{
-		Player::updatePhysics(); //for returning to ground after jumping
+		if (flying) 
+		{
+			//dependant on flight duration
+			if (flightTime.getElapsedTime().asSeconds() >= 7.f ) 
+			{
+				flying = false;
+			}
+			// Apply reduced upward velocity
+			if (flying) 
+			{
+				if ((player_y <= flight_y - 300.f))
+				{
+					velocity_y =+3;  //to keep it at 300 px
+				}
+				else
+				{
+					velocity_y=-3; //moves up
+				}
+			}
+			else 
+			{
+				velocity_y = 0;  // Stop upward motion once timer stops
+			}
+		}
+		// gravity when on the floor or jumping
+		if (!flying) 
+		{
+			velocity_y += gravity;
+		}
 
-		if (onground)
+		Player::updatePhysics();
+
+		if (onground) 
 		{
 			jumping = false;
-			moving = (velocity_x != 0); //dependant on if theyre moving or not
+			moving = (velocity_x != 0);
 			setSprite();
 		}
 	}
@@ -409,7 +457,7 @@ bool facingRight;
 				setSprite();
 			}
 		}
-		virtual void useSpecialAbility() override
+		virtual void useSpecialAbility() override //WORK ON CLOCK
 		{
 			if (!invincible) 
 			{
@@ -462,10 +510,9 @@ class PlayerManager {
 	Player* players[3]; //to be used for switching between the three characters
 	int lives; //total lives
 	int currentPlayer; //the array index for the leader
-	float invincibilityTimer; //for when it gains invincibility 
-	bool isInvincible;
+	const float pitThreshold;
 public:
-	PlayerManager(PlayerFactory& factory) :lives(3), currentPlayer(0)
+	PlayerManager(PlayerFactory& factory) :lives(3), currentPlayer(0),pitThreshold(730.0f)
 	{
 		players[0] = factory.createPlayer("Sonic", 100, 100);     //upcasting from child to parent
 		players[1] = factory.createPlayer("Tails", 50, 100);
@@ -501,16 +548,13 @@ public:
 				follower->setVelocityX(0); 
 			}
 			//applying jumping logic for follower
-
 			float verticalDifference = leader.getYPosition() - follower->getYPosition();
 
 			if (verticalDifference < -30.0f) 
 			{
 				follower->jump(); //kept a check of 30 px vertically, if 30 px difference then the follower also jumps agfter leader
 			}
-
 		}
-
 	}
 	~PlayerManager() {
 		for (int i = 0; i < 3; ++i) 
@@ -532,20 +576,29 @@ public:
 		currentPlayer = (currentPlayer + 1) % 3; //shifting to the next player index
 		players[currentPlayer]->setLeader(true); //making the next one the player leader
 	}
+	int getLives()
+	{
+		return lives;
+	}
+	void addLife()
+	{
+		lives += 1;
+	}
+	void checkPitRespawns() {  // New method
+		Player* leader = getLeader();
 
-	//Player& changePlayer()
-	//{
-	//	changePlayerIndex(); //updating the index and returning that player
-	//	return *players[currentPlayer];
-	//}
+		for (int i = 0; i < 3; ++i) 
+		{
+			Player* p = players[i];
+			if (p->getYPosition() > pitThreshold) //for incase the followers fall into the pit 
+			{
+				p->respawn(leader->getXposition() + 50.f, leader->getYPosition());
+			}
+		}
+	}
 };
-
-
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-
-using namespace sf;
-
+//
+//
 //int main()
 //{
 //	// Create game window
@@ -602,6 +655,7 @@ using namespace sf;
 //
 //		// Update followers logic (sets velocity)
 //		manager.updateFollowers();
+//		manager.checkPitRespawns();
 //
 //		// Rendering
 //		window.clear(Color::Black);
@@ -618,4 +672,4 @@ using namespace sf;
 //
 //	return 0;
 //}
-
+//

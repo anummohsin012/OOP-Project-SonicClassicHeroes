@@ -159,8 +159,8 @@ public:
 
 	void setSprite() 
 	{
-		const Texture& currentTex = spriteManager.getTexture(moving,jumping,facingRight,boostActive);
-		sprite.setTexture(currentTex);
+		const Texture& current = spriteManager.getTexture(moving,jumping,facingRight,boostActive);
+		sprite.setTexture(current);
 	}
 	virtual void moveRight() override
 	{
@@ -597,79 +597,79 @@ public:
 		}
 	}
 };
-//
-//
-//int main()
-//{
-//	// Create game window
-//	RenderWindow window(VideoMode(1280, 720), "Character Test");
-//	window.setFramerateLimit(60);
-//
-//	PlayerFactory factory;
-//	PlayerManager manager(factory);
-//
-//	Event ev;
-//
-//	while (window.isOpen())
-//	{
-//		while (window.pollEvent(ev))
-//		{
-//			if (ev.type == Event::Closed)
-//				window.close();
-//			if (ev.type == Event::KeyPressed)
-//			{
-//				if (ev.key.code == Keyboard::Tab)
-//				{
-//					manager.changePlayer(); // Switch character
-//				}
-//			}
-//		}
-//
-//		// Input for leader only
-//		if (Keyboard::isKeyPressed(Keyboard::Right))
-//			manager.getLeader()->moveRight();
-//		else if (Keyboard::isKeyPressed(Keyboard::Left))
-//			manager.getLeader()->moveLeft();
-//		else
-//			manager.getLeader()->setVelocityX(0); // Stop if no key pressed
-//
-//		if (Keyboard::isKeyPressed(Keyboard::Space))
-//			manager.getLeader()->jump();
-//
-//		if (Keyboard::isKeyPressed(Keyboard::LShift))
-//			manager.getLeader()->useSpecialAbility();
-//
-//		// Update all players' physics
-//		for (int i = 0; i < 3; ++i)
-//		{
-//			manager.getPlayer(i)->updatePhysics();
-//
-//			// Floor collision for each
-//			if (manager.getPlayer(i)->getYPosition() >= 600)
-//			{
-//				manager.getPlayer(i)->setYPosition(600);
-//				manager.getPlayer(i)->setVelocityY(0);
-//				manager.getPlayer(i)->setOnGround(true);
-//			}
-//		}
-//
-//		// Update followers logic (sets velocity)
-//		manager.updateFollowers();
-//		manager.checkPitRespawns();
-//
-//		// Rendering
-//		window.clear(Color::Black);
-//		for (int i = 0; i < 3; ++i)
-//		{
-//			const Sprite& sprite = manager.getPlayer(i)->getSprite();
-//			Sprite s = sprite;
-//			s.setPosition(manager.getPlayer(i)->getXposition(), manager.getPlayer(i)->getYPosition());
-//			window.draw(s);
-//		}
-//		window.display();
-//	}
-//
-//
-//	return 0;
-//}
-//
+
+
+int main()
+{
+	// Create game window
+	RenderWindow window(VideoMode(1280, 720), "Character Test");
+	window.setFramerateLimit(60);
+
+	PlayerFactory factory;
+	PlayerManager manager(factory);
+
+	Event ev;
+
+	while (window.isOpen())
+	{
+		while (window.pollEvent(ev))
+		{
+			if (ev.type == Event::Closed)
+				window.close();
+			if (ev.type == Event::KeyPressed)
+			{
+				if (ev.key.code == Keyboard::Tab)
+				{
+					manager.changePlayer(); // Switch character
+				}
+			}
+		}
+
+		// Input for leader only
+		if (Keyboard::isKeyPressed(Keyboard::Right))
+			manager.getLeader()->moveRight();
+		else if (Keyboard::isKeyPressed(Keyboard::Left))
+			manager.getLeader()->moveLeft();
+		else
+			manager.getLeader()->setVelocityX(0); // Stop if no key pressed
+
+		if (Keyboard::isKeyPressed(Keyboard::Space))
+			manager.getLeader()->jump();
+
+		if (Keyboard::isKeyPressed(Keyboard::LShift))
+			manager.getLeader()->useSpecialAbility();
+
+		// Update all players' physics
+		for (int i = 0; i < 3; ++i)
+		{
+			manager.getPlayer(i)->updatePhysics();
+
+			// Floor collision for each
+			if (manager.getPlayer(i)->getYPosition() >= 600)
+			{
+				manager.getPlayer(i)->setYPosition(600);
+				manager.getPlayer(i)->setVelocityY(0);
+				manager.getPlayer(i)->setOnGround(true);
+			}
+		}
+
+		// Update followers logic (sets velocity)
+		manager.updateFollowers();
+		manager.checkPitRespawns();
+
+		// Rendering
+		window.clear(Color::Black);
+		for (int i = 0; i < 3; ++i)
+		{
+			const Sprite& sprite = manager.getPlayer(i)->getSprite();
+			Sprite s = sprite;
+			s.setPosition(manager.getPlayer(i)->getXposition(), manager.getPlayer(i)->getYPosition());
+			window.draw(s);
+		}
+		window.display();
+	}
+
+
+	return 0;
+}
+

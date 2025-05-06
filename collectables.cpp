@@ -1,0 +1,189 @@
+#include <iostream>
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <SFML/Window.hpp>
+
+using namespace sf;
+using namespace std;
+
+class Collectibles {
+protected:
+	Texture texture;
+	Sprite sprite;
+	int row, column;
+	//static SoundBuffer collectSound;
+	//static bool soundLoaded;
+public:
+	Collectibles(int r, int c) :row(r), column(c) {}
+	virtual void draw(float cell_size, RenderWindow& window) = 0;
+	virtual void collect(char** lvl) = 0;
+	virtual ~Collectibles(){}
+	virtual void playSound() = 0;
+
+	float getX(float cell_size) const 
+	{ 
+		return column * cell_size; 
+	}
+	float getY(float cell_size) const 
+	{ 
+		return row * cell_size; 
+	}
+};
+
+class Rings:public Collectibles{
+	static SoundBuffer ringSound;
+	static bool ringSoundLoaded;
+public:
+	Rings(int r,int c, char** lvl):Collectibles(r,c)
+	{
+		texture.loadFromFile("Date/ring.png");
+		sprite.setTexture(texture);
+		lvl[r][c] = 'R';
+	}
+	virtual void draw(float cell_size, RenderWindow& window) override 
+	{
+		sprite.setPosition(getX(cell_size), getY(cell_size));
+		window.draw(sprite);
+	}
+	virtual void collect(char** lvl)
+	{
+		lvl[row][column] = ' ';
+	}
+	virtual void playSound() 
+	{
+		if (!ringSoundLoaded) 
+		{
+			ringSound.loadFromFile("Data/Ring.wav");
+			ringSoundLoaded = true;
+		}
+		Sound sound(ringSound);
+		sound.play();
+	}
+	virtual~ Rings(){}
+};
+SoundBuffer Rings::ringSound;
+bool Rings::ringSoundLoaded = false;
+
+
+class ExtraLives: public Collectibles {
+	static SoundBuffer lifeSound;
+	static bool lifeSoundLoaded;
+public:
+	ExtraLives(int r, int c, char** lvl) : Collectibles(r, c)
+	{
+		texture.loadFromFile("Date/life.png");
+		sprite.setTexture(texture);
+		lvl[r][c] = 'L';
+	}
+	virtual void draw(float cell_size, RenderWindow& window) override 
+	{
+		sprite.setPosition(getX(cell_size), getY(cell_size));
+		window.draw(sprite);
+	}
+	virtual void collect(char** lvl)
+	{
+		lvl[row][column] = ' ';
+	}
+	virtual~ ExtraLives(){}
+	virtual void playSound() {
+		if (!lifeSoundLoaded) {
+			lifeSound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Stage\LargeBooster.wav");
+			lifeSoundLoaded = true;
+		}
+		Sound sound(lifeSound);
+		sound.play();
+	}
+};
+SoundBuffer ExtraLives::lifeSound;
+bool ExtraLives::lifeSoundLoaded = false;
+
+class SpecialAbility: public Collectibles {
+	static SoundBuffer abilitySound;
+	static bool abilitySoundLoaded;
+public:
+	SpecialAbility(int r, int c, char** lvl) : Collectibles(r, c)
+	{
+		texture.loadFromFile("Date/bonus.png");
+		sprite.setTexture(texture);
+		lvl[r][c] = 'A';
+	}
+	virtual void draw(float cell_size, RenderWindow& window) override 
+	{
+		sprite.setPosition(getX(cell_size), getY(cell_size));
+		window.draw(sprite);
+	}
+	virtual void collect(char** lvl)
+	{
+		lvl[row][column] = ' ';
+	}
+	virtual void playSound() {
+		if (!abilitySoundLoaded) {
+			abilitySound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Global\SpecialRing.wav");
+			abilitySoundLoaded = true;
+		}
+		Sound sound(abilitySound);
+		sound.play();
+	}
+	virtual ~SpecialAbility(){}
+};
+SoundBuffer SpecialAbility::abilitySound;
+bool SpecialAbility::abilitySoundLoaded = false;
+
+class CollectibleFactory {
+	int size;
+	Collectibles** collectibles;
+	int current;
+public:
+	CollectibleFactory(int size = 3) :size(size), collectibles(new Collectibles* [size]),current(0)
+	{
+		for (int i = 0;i < size;i++)
+			collectibles[i] = nullptr;
+	}
+	void spawn(Collectibles* c)
+	{
+		if (current < size)
+		{
+			collectibles[current++] = c;
+		}
+		else
+		{
+			resize();
+			collectibles[current++] = c;
+		}
+	}
+private:
+	void resize()
+	{
+		int tempsize = size * 2; //dpoubled the size of the arrya
+		Collectibles** temp = new Collectibles * [tempsize];
+
+		for (int i = 0; i < size; ++i)
+		{
+			temp[i] = collectibles[i];
+		}
+		for (int i = size; i < tempsize; ++i)
+		{
+			temp[i] = nullptr;
+		}
+
+		size = tempsize;
+		delete[] collectibles;
+		collectibles = temp;
+
+	}
+public:
+	virtual ~CollectibleFactory()
+	{
+		for (int i = 0;i < current;i++)
+			delete collectibles[i];
+		delete[] collectibles;
+	}
+	Collectibles** getCollectibles() 
+	{ 
+		return collectibles; 
+	}
+	int getCount() const 
+	{ 
+		return current; 
+	}
+};

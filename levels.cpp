@@ -20,7 +20,7 @@ protected:
 	int ringscollected;
 	int score;
 	int exlives;
-    Texture wall;
+    Texture wall; 
     Sprite wallSprite;
 public:
 	Levels(int h, int w, int rings, int e_l)
@@ -104,14 +104,6 @@ public:
             manager.getPlayer(i)->updatePhysics();
             manager.getPlayer(i)->updatePhysicsWithCollision(lvl, cell_size);
             checkCollectibles(manager.getPlayer(i), factory, lvl, cell_size);
-
-            //collision with floor
-            if (manager.getPlayer(i)->getYPosition() >= 600)
-            {
-                manager.getPlayer(i)->setYPosition(600);
-                manager.getPlayer(i)->setVelocityY(0);
-                manager.getPlayer(i)->setOnGround(true);
-            }
         }
 
         //followers
@@ -185,7 +177,7 @@ public:
         {
             lvl[12][i] = 'w';
         }
-        for (int i = 14;i < 20;i++)
+        for (int i = 14;i < 16;i++)
             lvl[12][i] = ' ';
         factory.spawn(new Rings(8, 14,lvl));
         factory.spawn(new Rings(10, 25, lvl));

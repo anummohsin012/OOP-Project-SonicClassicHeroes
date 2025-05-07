@@ -9,7 +9,7 @@
 #include <SFML/Window.hpp>
 #include "player.cpp"
 #include "game.cpp"
-//#include "menu.cpp"
+#include "menu.cpp"
 
 using namespace sf;
 using namespace std;
@@ -22,62 +22,65 @@ void draw_player(RenderWindow& window, Sprite& LstillSprite, float player_x, flo
 
 void display_level(RenderWindow& window, const int height, const int width, char** lvl, Sprite& wallSprite1, const int cell_size);
 
-int main()
-{	
-
-	RenderWindow window(VideoMode(screen_x, screen_y), "Sonic the Hedgehog-OOP", Style::Close);
+	int main()
+	{	
 	
-	window.setFramerateLimit(60);
-	Menu menu(1200,900);
+		RenderWindow window(VideoMode(screen_x, screen_y), "Sonic Classic Heroes-OOP", Style::Close);
+		
+		window.setFramerateLimit(60);
+		Menu menu(1200,900);
+	
+		while (window.isOpen()) {
+			sf::Event event;
+			while (window.pollEvent(event)) {
+				if (event.type == Event::Closed)
+					window.close();
 
-	while (window.isOpen()) {
-		sf::Event event;
-		while (window.pollEvent(event)) {
-			if (event.type == Event::Closed)
-				window.close();
-
-			if (event.type == Event::KeyPressed) {
-				if (!menu.getoptionopen()) {
-					if (event.key.code == sf::Keyboard::Up) {
-
-						menu.hower(-1);
-					}
-					else if (event.key.code == sf::Keyboard::Down) {
-						menu.hower(1);
-					}
-					else if (event.key.code == sf::Keyboard::Enter) {
-						if (menu.getindex() == 4) {
-							window.close();
+				
+	
+				if (event.type == Event::KeyPressed) {
+					if (!menu.getoptionopen()) {
+						if (event.key.code == sf::Keyboard::Up) {
+	
+							menu.hower(-1);
 						}
-						else {
-							menu.optionselected(menu.getindex());
+						else if (event.key.code == sf::Keyboard::Down) {
+							menu.hower(1);
 						}
+						else if (event.key.code == sf::Keyboard::Enter) {
+
+							if (menu.getindex() == 4) {
+								window.close();
+							}
+							else {
+								menu.optionselected(menu.getindex(),window,900,1200);
+
+							}
+						}
+					}
+					else if (menu.getoptionopen()) {
+						menu.draw(window,900,1200);
+						menu.voldisplay();
+						if (event.key.code == sf::Keyboard::Up)
+							menu.volset(1);
+						else if (event.key.code == sf::Keyboard::Down)
+							menu.volset(0);
+	
+						else if (event.key.code == sf::Keyboard::Escape)
+							menu.toggleing();
 					}
 				}
-
-				else if (menu.getoptionopen()) {
-					menu.draw(window,900,1200);
-					menu.voldisplay();
-					if (event.key.code == sf::Keyboard::Up)
-						menu.volset(1);
-					else if (event.key.code == sf::Keyboard::Down)
-						menu.volset(0);
-
-					else if (event.key.code == sf::Keyboard::Escape)
-						menu.toggleing();
-				}
+	
+	
+	
+	
 			}
-
-
-
-
+	
+	
+			window.clear();
+			menu.draw(window,900,1200);
+			window.display();
 		}
-
-
-		window.clear();
-		menu.draw(window,900,1200);
-		window.display();
-	}
 	/////////////////////////////////////////////////////////////////
 	// a cell is 64 by 64 pixels
 

@@ -22,6 +22,8 @@ protected:
 	int exlives;
     Texture wall; 
     Sprite wallSprite;
+    Texture spikes;
+    Sprite spikesSprite;
 public:
 	Levels(int h, int w, int rings, int e_l)
 		:height(h), width(w), cell_size(64), manager(playerfactory,lvl, height, width), lvl(new char* [height]), rings(rings), ringscollected(0), score(0), exlives(e_l), factory(rings+e_l)
@@ -44,6 +46,10 @@ public:
 
         wall.loadFromFile("Data/brick1.png");
         wallSprite.setTexture(wall);
+
+        spikes.loadFromFile("Data/spike.png");
+        spikesSprite.setTexture(spikes);
+
 	}
     virtual void drawCollectibles(RenderWindow& window, float scrollOffsetX) = 0;
     virtual void display_level(RenderWindow& window, const int height, const int width, char** lvl, Sprite& wallSprite1, const int cell_size,float offset) = 0;
@@ -62,39 +68,41 @@ public:
     }
 
     void checkCollectibles(Player* player, CollectibleFactory& factory, char** lvl, int cell_size) {
-        for (int i = 0; i < factory.getCount(); /* no increment here */) {
+        for (int i = 0; i < factory.getCount();) 
+        {
             Collectibles* c = factory.getCollectibles()[i];
-            if (!c) {
-                i++; // Skip nullptr entries
+            
+            if (!c) //since some are null pointers 
+            {
+                i++; 
                 continue;
             }
 
-            // Player hitbox
+            // hitbox
             float px = player->getXposition();
             float py = player->getYPosition();
             float cx = c->getX(cell_size);
             float cy = c->getY(cell_size);
 
-            // AABB collision check
-            if (px + player->HITBOX_RIGHT > cx &&
-                px + player->HITBOX_LEFT < cx + cell_size &&
-                py + player->HITBOX_BOTTOM > cy &&
-                py + player->HITBOX_TOP < cy + cell_size) {
+            //collision from all 4 sides
+            if (px + player->HITBOX_RIGHT > cx && px + player->HITBOX_LEFT < cx + cell_size && py + player->HITBOX_BOTTOM > cy && py + player->HITBOX_TOP < cy + cell_size) 
+            {
+                if (c->typeOfCollectible() == "ring")
+                    ringscollected += 1;
+                else if (c->typeOfCollectible() == "extralife")
+                    manager.addLife();
+                else
+                    manager.getLeader()->useSpecialAbility();
 
-                c->collect(lvl); // Remove from grid
-
-                // Use our new method instead of deleting directly
+                c->collect(lvl); 
                 factory.removeCollectible(i);
-                // Don't increment i since we've shifted the array
             }
-            else {
-                i++; // Only increment if we didn't remove an item
+            else 
+            {
+                i++; //if we didnt remove smth
             }
         }
     }
-
-
-
 
     void physics()
     {
@@ -178,12 +186,18 @@ public:
             lvl[12][i] = 'w';
         }
         for (int i = 14;i < 16;i++)
-            lvl[12][i] = ' ';
+            lvl[12][i] = 'w';
+        for (int i = 24;i < 27;i++)
+            lvl[8][i] = 'w';
+        for (int i = 19;i < 24;i++)
+            lvl[11][i] = 'w';
+
+
         factory.spawn(new Rings(8, 14,lvl));
         factory.spawn(new Rings(10, 25, lvl));
-        factory.spawn(new Rings(10, 7, lvl));
-        factory.spawn(new ExtraLives(10, 5, lvl));
-        factory.spawn(new SpecialAbility(7, 2, lvl));
+        factory.spawn(new Rings(7, 26, lvl));
+        factory.spawn(new ExtraLives(10, 2, lvl));
+        factory.spawn(new SpecialAbility(10, 30, lvl));
     }
     virtual void drawCollectibles(RenderWindow& window, float offset ) override 
     {
@@ -201,6 +215,11 @@ public:
                 {
                     wallSprite1.setPosition(j * cell_size-offset, i * cell_size);
                     window.draw(wallSprite1);
+                }
+                if (lvl[i][j] == 's')
+                {
+                    spikesSprite.setPosition(j * cell_size - offset, i * cell_size);
+                    window.draw(spikesSprite);
                 }
             }
         }

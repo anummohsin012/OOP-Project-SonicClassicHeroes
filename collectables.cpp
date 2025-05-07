@@ -32,6 +32,7 @@ public:
 	{ 
 		return row * cell_size; 
 	}
+	virtual string typeOfCollectible() = 0;
 };
 
 class Rings:public Collectibles{
@@ -61,6 +62,10 @@ public:
 	//	sound.play();
 	//}
 	~ Rings(){}
+	virtual string typeOfCollectible()
+	{
+		return "ring";
+	}
 };
 //SoundBuffer Rings::ringSound;
 //bool Rings::ringSoundLoaded = false;
@@ -92,6 +97,10 @@ public:
 		Sound sound(lifeSound);
 		sound.play();
 	}*/
+	virtual string typeOfCollectible()
+	{
+		return "extralife";
+	}
 };
 //SoundBuffer ExtraLives::lifeSound;
 //bool ExtraLives::lifeSoundLoaded = false;
@@ -121,6 +130,10 @@ public:
 	//	sound.play();
 	//}
 	~SpecialAbility(){}
+	virtual string typeOfCollectible()
+	{
+		return "specialability";
+	}
 };
 //SoundBuffer SpecialAbility::abilitySound;
 //bool SpecialAbility::abilitySoundLoaded = false;

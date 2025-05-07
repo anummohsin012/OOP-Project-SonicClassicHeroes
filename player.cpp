@@ -51,6 +51,10 @@ public:
 	//functions where we apply physics
 
 	void updatePhysicsWithCollision(char** lvl, int cell_size) {
+		//finding midpoints
+		const float vertical_mid = (HITBOX_TOP + HITBOX_BOTTOM) / 2;
+		const float horizontal_mid = (HITBOX_LEFT + HITBOX_RIGHT) / 2;
+		
 		//velocity
 		float next_x = player_x + velocity_x;
 		float next_y = player_y + velocity_y;
@@ -58,14 +62,21 @@ public:
 		//using source logic to check for collisions 
 		int left_col =(int)(next_x + HITBOX_LEFT) / cell_size;
 		int right_col =  (int)(next_x + HITBOX_RIGHT) / cell_size; 
-		int mid_row =  (int)(player_y + 20.f) / cell_size;
+		int mid_row =  (int)(player_y + vertical_mid) / cell_size;
 
 		//checking bounds
 		if (mid_row >= 0 && mid_row < height) 
 		{
-			if ((left_col >= 0 && left_col < width && lvl[mid_row][left_col] == 'w') ||(right_col >= 0 && right_col < 200 && lvl[mid_row][right_col] == 'w')) 
+
+			if (left_col >= 0 && left_col < width && lvl[mid_row][left_col] == 'w')  //collision from left
 			{
-				velocity_x = 0; // Stop if hitting wall
+				velocity_x = 0;  //stop and freeze to grid boundary
+				player_x = (left_col + 1) * cell_size - HITBOX_LEFT;
+			}
+			else if (right_col >= 0 && right_col < width && lvl[mid_row][right_col] == 'w')
+			{
+				velocity_x = 0;
+				player_x = right_col * cell_size - HITBOX_RIGHT;
 			}
 			else 
 			{
@@ -76,7 +87,7 @@ public:
 		//veritcal collsiosn
 		int top_row = (int)(next_y + HITBOX_TOP) / cell_size;
 		int bottom_row =  (int)(next_y + HITBOX_BOTTOM) / cell_size; 
-		int mid_col = (int)(player_x + 50.f) / cell_size;
+		int mid_col = (int)(player_x + horizontal_mid) / cell_size;
 
 		//  bounds
 		if (mid_col >= 0 && mid_col < width) 
@@ -158,7 +169,7 @@ public:
 		velocity_y = 0;
 		onground = true;
 	}
-
+	void respawnLeader()
 };
 
 
@@ -228,10 +239,10 @@ public:
 	{
 		// checking for the wall
 		int right_col = (int)(player_x + HITBOX_RIGHT + speed) / cell_size;
-		int mid_row = (int)(player_y + 20.f) / cell_size;
+		int mid_row = (int)(player_y + (HITBOX_TOP + HITBOX_BOTTOM) / 2) / cell_size;
 
 		//bounds
-		if (mid_row >= 0 && mid_row < 14 && right_col >= 0 && right_col < 200) 
+		if (mid_row >= 0 && mid_row < height && right_col >= 0 && right_col < width) 
 		{
 			if (lvl[mid_row][right_col] != 'w') 
 			{
@@ -245,8 +256,8 @@ public:
 	void moveLeft(char** lvl, float cell_size) override 
 	{
 		int left_col = (int)(player_x + HITBOX_LEFT - speed) / cell_size; 
-		int mid_row = (int)(player_y + 20.f) / cell_size;  
-		if (mid_row >= 0 && mid_row < 14 && left_col >= 0 && left_col < 200)
+		int mid_row = (int)(player_y + (HITBOX_TOP + HITBOX_BOTTOM) / 2) / cell_size;
+		if (mid_row >= 0 && mid_row < height && left_col >= 0 && left_col < width)
 		{
 			if (lvl[mid_row][left_col] != 'w') 
 			{
@@ -268,24 +279,16 @@ public:
 			setSprite();
 		}
 	}
-	virtual void useSpecialAbility() override //NOTE TO SELF: FIX THE CLOCK AND SPRITE FOR SONIC AND KNUCKLES  !!!!!!!!!!!!!!!1
+	virtual void useSpecialAbility() override 
 	{
+
 		if (!boostActive) 
 		{
 			speed += 4;
 			abilityClock.restart();
 			boostActive = true;
+			sprite.setTextureRect(IntRect(80, 0, 40, 40));
 			setSprite();
-		}
-		else 
-		{
-			// it disablea after 15 seconds
-			if (abilityClock.getElapsedTime().asSeconds() >= 15.f) 
-			{
-				speed = 18;
-				boostActive = false;
-				setSprite();
-			}
 		}
 	}
 	virtual void setLeader(bool l)
@@ -294,6 +297,14 @@ public:
 	}
 	virtual void updatePhysics() override 
 	{
+		if (boostActive && abilityClock.getElapsedTime().asSeconds() >= 15.f) {
+			speed = 18.f; 
+			boostActive = false;
+			sprite.setTextureRect(IntRect(0, 0, 40, 40));
+			setSprite();
+		}
+
+		
 		Player::updatePhysics(); //for returning to ground
 
 		if (onground) 
@@ -362,10 +373,10 @@ public:
 	{
 		// checking for the wall
 		int right_col = (int)(player_x + HITBOX_RIGHT + speed) / cell_size;
-		int mid_row = (int)(player_y + 20.f) / cell_size;
+		int mid_row = (int)(player_y + (HITBOX_TOP + HITBOX_BOTTOM) / 2) / cell_size;
 
 		//bounds
-		if (mid_row >= 0 && mid_row < 14 && right_col >= 0 && right_col < 200)
+		if (mid_row >= 0 && mid_row < height && right_col >= 0 && right_col < width)
 		{
 			if (lvl[mid_row][right_col] != 'w')
 			{
@@ -379,8 +390,8 @@ public:
 	void moveLeft(char** lvl, float cell_size) override
 	{
 		int left_col = (int)(player_x + HITBOX_LEFT - speed) / cell_size;
-		int mid_row = (int)(player_y + 20.f) / cell_size;
-		if (mid_row >= 0 && mid_row < 14 && left_col >= 0 && left_col < 200)
+		int mid_row = (int)(player_y + (HITBOX_TOP + HITBOX_BOTTOM) / 2) / cell_size;
+		if (mid_row >= 0 && mid_row < height && left_col >= 0 && left_col < width)
 		{
 			if (lvl[mid_row][left_col] != 'w')
 			{
@@ -513,10 +524,10 @@ bool facingRight;
 		{
 			// checking for the wall
 			int right_col = (int)(player_x + HITBOX_RIGHT + speed) / cell_size;
-			int mid_row = (int)(player_y + 20.f) / cell_size;
+			int mid_row = (int)(player_y + (HITBOX_TOP + HITBOX_BOTTOM) / 2) / cell_size;
 
 			//bounds
-			if (mid_row >= 0 && mid_row < 14 && right_col >= 0 && right_col < 200)
+			if (mid_row >= 0 && mid_row < height && right_col >= 0 && right_col < width)
 			{
 				if (lvl[mid_row][right_col] != 'w')
 				{
@@ -530,8 +541,8 @@ bool facingRight;
 		void moveLeft(char** lvl, float cell_size) override
 		{
 			int left_col = (int)(player_x + HITBOX_LEFT - speed) / cell_size;
-			int mid_row = (int)(player_y + 20.f) / cell_size;
-			if (mid_row >= 0 && mid_row < 14 && left_col >= 0 && left_col < 200)
+			int mid_row = (int)(player_y + (HITBOX_TOP + HITBOX_BOTTOM) / 2) / cell_size;
+			if (mid_row >= 0 && mid_row < height && left_col >= 0 && left_col < width)
 			{
 				if (lvl[mid_row][left_col] != 'w')
 				{
@@ -552,7 +563,7 @@ bool facingRight;
 				setSprite();
 			}
 		}
-		virtual void useSpecialAbility() override //WORK ON CLOCK
+		virtual void useSpecialAbility() override //WORK ON CLOCK NOTE TO SELF SET KNUCKLES SPECIAL ABILITY
 		{
 			if (!invincible) 
 			{
@@ -560,17 +571,15 @@ bool facingRight;
 				invincibilityClock.restart();
 				setSprite();
 			}
-			else 
-			{
-				if (invincibilityClock.getElapsedTime().asSeconds() >= 15.f) //lasts for 15 seconds
-				{
-					invincible = false;
-					setSprite();
-				}
-			}
 		}
 		virtual void updatePhysics() override
 		{
+			if (invincible && invincibilityClock.getElapsedTime().asSeconds() >= 15.f) 
+			{
+				invincible = false;
+				setSprite();
+			}
+			
 			Player::updatePhysics(); //for returning to ground after jumping
 
 			if (onground)

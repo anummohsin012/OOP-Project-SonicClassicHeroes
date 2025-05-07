@@ -167,6 +167,7 @@ private:
 		collectibles = temp;
 
 	}
+
 public:
 	virtual ~CollectibleFactory()
 	{
@@ -182,4 +183,23 @@ public:
 	{ 
 		return current; 
 	}
+
+
+
+	void removeCollectible(int index) {
+		if (index < 0 || index >= current) return;
+
+		// Delete the object
+		delete collectibles[index];
+
+		// Shift remaining elements to fill the gap
+		for (int i = index; i < current - 1; i++) {
+			collectibles[i] = collectibles[i + 1];
+		}
+
+		// Set the last position to nullptr and decrease count
+		collectibles[current - 1] = nullptr;
+		current--;
+	}
+
 };

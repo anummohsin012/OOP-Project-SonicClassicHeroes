@@ -24,7 +24,7 @@ protected:
     Sprite wallSprite;
 public:
 	Levels(int h, int w, int rings, int e_l)
-		:height(h), width(w), cell_size(64), manager(playerfactory,lvl), lvl(new char* [height]), rings(rings), ringscollected(0), score(0), exlives(e_l), factory(rings+e_l)
+		:height(h), width(w), cell_size(64), manager(playerfactory,lvl, height, width), lvl(new char* [height]), rings(rings), ringscollected(0), score(0), exlives(e_l), factory(rings+e_l)
 	{
         for (int i = 0; i < height; i ++) 
         {
@@ -62,27 +62,38 @@ public:
     }
 
     void checkCollectibles(Player* player, CollectibleFactory& factory, char** lvl, int cell_size) {
-        for (int i = 0; i < factory.getCount(); ++i) {
+        for (int i = 0; i < factory.getCount(); /* no increment here */) {
             Collectibles* c = factory.getCollectibles()[i];
-            if (!c) continue;
+            if (!c) {
+                i++; // Skip nullptr entries
+                continue;
+            }
 
-            // Player hitbox (unscaled)
+            // Player hitbox
             float px = player->getXposition();
             float py = player->getYPosition();
             float cx = c->getX(cell_size);
             float cy = c->getY(cell_size);
 
-            // AABB collision check (40x40 sprite vs collectible)
-            if (px + Player::HITBOX_RIGHT > cx &&
-                px + Player::HITBOX_LEFT < cx + cell_size &&
-                py + Player::HITBOX_BOTTOM > cy &&
-                py + Player::HITBOX_TOP < cy + cell_size) {
+            // AABB collision check
+            if (px + player->HITBOX_RIGHT > cx &&
+                px + player->HITBOX_LEFT < cx + cell_size &&
+                py + player->HITBOX_BOTTOM > cy &&
+                py + player->HITBOX_TOP < cy + cell_size) {
+
                 c->collect(lvl); // Remove from grid
-                delete c;
-                factory.getCollectibles()[i] = nullptr;
+
+                // Use our new method instead of deleting directly
+                factory.removeCollectible(i);
+                // Don't increment i since we've shifted the array
+            }
+            else {
+                i++; // Only increment if we didn't remove an item
             }
         }
     }
+
+
 
 
     void physics()
@@ -90,7 +101,7 @@ public:
         //physics
         for (int i = 0; i < 3; ++i)
         {
-           /* manager.getPlayer(i)->updatePhysics();*/
+            manager.getPlayer(i)->updatePhysics();
             manager.getPlayer(i)->updatePhysicsWithCollision(lvl, cell_size);
             checkCollectibles(manager.getPlayer(i), factory, lvl, cell_size);
 
@@ -174,7 +185,8 @@ public:
         {
             lvl[12][i] = 'w';
         }
-        lvl[12][13] = ' ';
+        for (int i = 14;i < 20;i++)
+            lvl[12][i] = ' ';
         factory.spawn(new Rings(8, 14,lvl));
         factory.spawn(new Rings(10, 25, lvl));
         factory.spawn(new Rings(10, 7, lvl));

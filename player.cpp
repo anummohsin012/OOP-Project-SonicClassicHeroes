@@ -32,22 +32,82 @@ protected:
 	Clock abilityClock;
 	float abilityTime;
 	bool abilityIsActive;
+	int height, width; //of level
 public:
-	Player(float s,float a, float x, float y, float jump, float gr)
-		:speed(s),acceleration(a),player_x(x),player_y(y),velocity_x(0),velocity_y(0),jump_strenght(jump),gravity(gr){ }
-	virtual void moveRight() = 0;
-	virtual void moveLeft() = 0;
+	Player(float s,float a, float x, float y, float jump, float gr,int h,int w)
+		:speed(s),acceleration(a),player_x(x),player_y(y),velocity_x(0),velocity_y(0),jump_strenght(jump),gravity(gr), height(h),width(w){ }
+	virtual void moveRight(char** lvl, float cell_size) = 0;
+	virtual void moveLeft(char** lvl, float cell_size) = 0;
 	virtual void jump() = 0;
 	virtual void useSpecialAbility() = 0;
 
+	//hitboxes 
+//keeping the logic that our sprites are originally 40px by 40 px and then keeping offsets of 5 from each direction making it 30 by 30
+	const float HITBOX_LEFT = 0.f;
+	const float HITBOX_RIGHT = (40*2.5f);
+	const float HITBOX_TOP = 0.f;
+	const float HITBOX_BOTTOM = (40*2.5f);
+
 	//functions where we apply physics
+
+	void updatePhysicsWithCollision(char** lvl, int cell_size) {
+		//velocity
+		float next_x = player_x + velocity_x;
+		float next_y = player_y + velocity_y;
+
+		//using source logic to check for collisions 
+		int left_col =(int)(next_x + HITBOX_LEFT) / cell_size;
+		int right_col =  (int)(next_x + HITBOX_RIGHT) / cell_size; 
+		int mid_row =  (int)(player_y + 20.f) / cell_size;
+
+		//checking bounds
+		if (mid_row >= 0 && mid_row < height) 
+		{
+			if ((left_col >= 0 && left_col < width && lvl[mid_row][left_col] == 'w') ||(right_col >= 0 && right_col < 200 && lvl[mid_row][right_col] == 'w')) 
+			{
+				velocity_x = 0; // Stop if hitting wall
+			}
+			else 
+			{
+				player_x = next_x;
+			}
+		}
+
+		//veritcal collsiosn
+		int top_row = (int)(next_y + HITBOX_TOP) / cell_size;
+		int bottom_row =  (int)(next_y + HITBOX_BOTTOM) / cell_size; 
+		int mid_col = (int)(player_x + 50.f) / cell_size;
+
+		//  bounds
+		if (mid_col >= 0 && mid_col < width) 
+		{ 
+			if (bottom_row >= 0 && bottom_row < height && lvl[bottom_row][mid_col] == 'w') 
+			{
+				player_y = bottom_row * cell_size - HITBOX_BOTTOM; //snap to ground
+				velocity_y = 0;
+				onground = true;
+			}
+			else if (top_row >= 0 && top_row < height && lvl[top_row][mid_col] == 'w') 
+			{
+				velocity_y = 0; //cieling hit
+			}
+			else 
+			{
+				player_y = next_y;
+				onground = false;
+			}
+		}
+	}
 	virtual void updatePhysics() 
 	{
+		//for jumping
 		player_x += velocity_x;
 		player_y += velocity_y;
 		if (!onground)
 			velocity_y += gravity;
 	}
+
+	//dealing with positions
 	virtual void setLeader(bool) = 0;
 	float getXposition() const
 	{
@@ -101,6 +161,7 @@ public:
 
 };
 
+
 class SonicSpriteManager {
 private:
 	Texture idleRight;
@@ -143,8 +204,8 @@ class Sonic :public Player {
 	bool jumping;
 	bool facingRight;
 public:
-	Sonic(float x, float y)
-		:Player(18,0.5,x,y,-20,1), boostActive(false), moving(false),jumping(false), facingRight(true)
+	Sonic(float x, float y, int h, int w)
+		:Player(18,0.5,x,y,-20,1, h,w), boostActive(false), moving(false),jumping(false), facingRight(true)
 	{
 		abilityTime = 15.0f;  // eans the ability would last 15 secinds
 		abilityIsActive = false;
@@ -162,29 +223,41 @@ public:
 		const Texture& current = spriteManager.getTexture(moving,jumping,facingRight,boostActive);
 		sprite.setTexture(current);
 	}
-	virtual void moveRight() override
+
+	virtual void moveRight(char** lvl, float cell_size) override 
 	{
-		facingRight = true;
-		moving = true;
+		// checking for the wall
+		int right_col = (int)(player_x + HITBOX_RIGHT + speed) / cell_size;
+		int mid_row = (int)(player_y + 20.f) / cell_size;
 
-		velocity_x += acceleration;
-		if (velocity_x > speed)
-			velocity_x = speed;
-
-		setSprite();
+		//bounds
+		if (mid_row >= 0 && mid_row < 14 && right_col >= 0 && right_col < 200) 
+		{
+			if (lvl[mid_row][right_col] != 'w') 
+			{
+				facingRight = true;
+				moving = true;
+				velocity_x = speed;
+				setSprite();
+			}
+		}
 	}
-	virtual void moveLeft() override
+	void moveLeft(char** lvl, float cell_size) override 
 	{
-		facingRight = false;
-		moving = true;
-
-		velocity_x -= acceleration;
-		if (velocity_x < -speed) 
-			velocity_x = -speed;
-
-		setSprite();
-
+		int left_col = (int)(player_x + HITBOX_LEFT - speed) / cell_size; 
+		int mid_row = (int)(player_y + 20.f) / cell_size;  
+		if (mid_row >= 0 && mid_row < 14 && left_col >= 0 && left_col < 200)
+		{
+			if (lvl[mid_row][left_col] != 'w') 
+			{
+				facingRight = false;  
+				moving = true;
+				velocity_x = -speed; 
+				setSprite();
+			}
+		}
 	}
+
 	virtual void jump() override
 	{
 		if (onground) 
@@ -277,7 +350,7 @@ class Tails : public Player {
 	float flight_y;
 	bool wasFlying;
 public:
-	Tails(float x, float y) : Player(10,0.3, x, y, -15, 0.8), flying(false), moving(false), jumping(false), facingRight(true), wasFlying(false) {}
+	Tails(float x, float y,int h, int w) : Player(10,0.3, x, y, -15, 0.8,h,w), flying(false), moving(false), jumping(false), facingRight(true), wasFlying(false) {}
 	void setSprite()
 	{
 		const Texture& currentTex = spriteManager.getTexture(moving, jumping, facingRight, flying);
@@ -285,27 +358,38 @@ public:
 		sprite.setTextureRect(IntRect(0, 0, 40, 40));
 		sprite.setScale(2.5f, 2.5f);
 	}
-	virtual void moveRight() override
+	virtual void moveRight(char** lvl, float cell_size) override
 	{
-		facingRight = true;
-		moving = true;
+		// checking for the wall
+		int right_col = (int)(player_x + HITBOX_RIGHT + speed) / cell_size;
+		int mid_row = (int)(player_y + 20.f) / cell_size;
 
-		velocity_x += acceleration;
-		if (velocity_x > speed) 
-			velocity_x = speed; //terminal velocity reached
-
-		setSprite();
+		//bounds
+		if (mid_row >= 0 && mid_row < 14 && right_col >= 0 && right_col < 200)
+		{
+			if (lvl[mid_row][right_col] != 'w')
+			{
+				facingRight = true;
+				moving = true;
+				velocity_x = speed;
+				setSprite();
+			}
+		}
 	}
-	virtual void moveLeft() override
+	void moveLeft(char** lvl, float cell_size) override
 	{
-		facingRight = false;
-		moving = true;
-
-		velocity_x -= acceleration;
-		if (velocity_x < -speed)
-			velocity_x = -speed;
-
-		setSprite();
+		int left_col = (int)(player_x + HITBOX_LEFT - speed) / cell_size;
+		int mid_row = (int)(player_y + 20.f) / cell_size;
+		if (mid_row >= 0 && mid_row < 14 && left_col >= 0 && left_col < 200)
+		{
+			if (lvl[mid_row][left_col] != 'w')
+			{
+				facingRight = false;
+				moving = true;
+				velocity_x = -speed;
+				setSprite();
+			}
+		}
 	}
 	virtual void jump() override
 	{
@@ -417,7 +501,7 @@ bool moving;
 bool jumping;
 bool facingRight;
 	public:
-		Knuckles(float x, float y) : Player(12, 0.4f, x, y, -18, 1.2),invincible(false), moving(false), jumping(false), facingRight(true) {}
+		Knuckles(float x, float y, int h, int w) : Player(12, 0.4f, x, y, -18, 1.2,h,w),invincible(false), moving(false), jumping(false), facingRight(true) {}
 		void setSprite()
 		{
 			const Texture& currentTex = spriteManager.getTexture(moving, jumping, facingRight, invincible);
@@ -425,27 +509,38 @@ bool facingRight;
 			sprite.setTextureRect(IntRect(0, 0, 40, 40));
 			sprite.setScale(2.5f, 2.5f);
 		}
-		virtual void moveRight() override
+		virtual void moveRight(char** lvl, float cell_size) override
 		{
-			facingRight = true;
-			moving = true;
+			// checking for the wall
+			int right_col = (int)(player_x + HITBOX_RIGHT + speed) / cell_size;
+			int mid_row = (int)(player_y + 20.f) / cell_size;
 
-			velocity_x += acceleration;
-			if (velocity_x > speed)
-				velocity_x = speed; //terminal velocity reached
-
-			setSprite();
+			//bounds
+			if (mid_row >= 0 && mid_row < 14 && right_col >= 0 && right_col < 200)
+			{
+				if (lvl[mid_row][right_col] != 'w')
+				{
+					facingRight = true;
+					moving = true;
+					velocity_x = speed;
+					setSprite();
+				}
+			}
 		}
-		virtual void moveLeft() override
+		void moveLeft(char** lvl, float cell_size) override
 		{
-			facingRight = false;
-			moving = true;
-
-			velocity_x -= acceleration;
-			if (velocity_x < -speed)
-				velocity_x = -speed;
-
-			setSprite();
+			int left_col = (int)(player_x + HITBOX_LEFT - speed) / cell_size;
+			int mid_row = (int)(player_y + 20.f) / cell_size;
+			if (mid_row >= 0 && mid_row < 14 && left_col >= 0 && left_col < 200)
+			{
+				if (lvl[mid_row][left_col] != 'w')
+				{
+					facingRight = false;
+					moving = true;
+					velocity_x = -speed;
+					setSprite();
+				}
+			}
 		}
 		virtual void jump() override
 		{
@@ -493,14 +588,14 @@ bool facingRight;
 };
 class PlayerFactory {
 public:
-	Player* createPlayer(string type, float x, float y)
+	Player* createPlayer(string type, float x, float y, int h, int w)
 	{
 		if (type == "Sonic")
-			return new Sonic(x, y);
+			return new Sonic(x, y,h,w);
 		if (type == "Tails")
-			return new Tails(x, y);
+			return new Tails(x, y, h ,w);
 		if (type == "Knuckles")
-			return new Knuckles(x, y);
+			return new Knuckles(x, y, h,w);
 		return nullptr;
 	}
 
@@ -511,12 +606,16 @@ class PlayerManager {
 	int lives; //total lives
 	int currentPlayer; //the array index for the leader
 	const float pitThreshold;
+	bool gameover;
+	char** lvl;
+	float cell_size;
+	int height, width;
 public:
-	PlayerManager(PlayerFactory& factory) :lives(3), currentPlayer(0),pitThreshold(730.0f)
+	PlayerManager(PlayerFactory& factory,char** lvl, int h, int w) :lives(3), currentPlayer(0), pitThreshold(730.0f), gameover(false),lvl(lvl),cell_size(64),height(h),width(w)
 	{
-		players[0] = factory.createPlayer("Sonic", 100, 100);     //upcasting from child to parent
-		players[1] = factory.createPlayer("Tails", 50, 100);
-		players[2] = factory.createPlayer("Knuckles", 0, 100);
+		players[0] = factory.createPlayer("Sonic", 100, 100,h,w);     //upcasting from child to parent
+		players[1] = factory.createPlayer("Tails", 50, 100,h,w);
+		players[2] = factory.createPlayer("Knuckles", 0, 100,h,w);
 		players[0]->setLeader(true);
 	}
 	void updateFollowers()
@@ -537,11 +636,11 @@ public:
 			//making sure te follwoers are alaways atleast 50px behind leader
 			if (displacement > 60.0f)  
 			{
-				follower->moveRight(); 
+				follower->moveRight(lvl,cell_size); 
 			}
 			else if (displacement < 40.0f) 
 			{
-				follower->moveLeft(); 
+				follower->moveLeft(lvl,cell_size); 
 			}
 			else
 			{
@@ -584,6 +683,16 @@ public:
 	{
 		lives += 1;
 	}
+	void removeLife()
+	{
+		if (lives - 1 == 0)
+		{
+			lives -= 1;
+			gameover = true;
+		}
+		else
+		lives -= 1;
+	}
 	void checkPitRespawns() {  // New method
 		Player* leader = getLeader();
 
@@ -597,79 +706,3 @@ public:
 		}
 	}
 };
-
-
-int main()
-{
-	// Create game window
-	RenderWindow window(VideoMode(1280, 720), "Character Test");
-	window.setFramerateLimit(60);
-
-	PlayerFactory factory;
-	PlayerManager manager(factory);
-
-	Event ev;
-
-	while (window.isOpen())
-	{
-		while (window.pollEvent(ev))
-		{
-			if (ev.type == Event::Closed)
-				window.close();
-			if (ev.type == Event::KeyPressed)
-			{
-				if (ev.key.code == Keyboard::Tab)
-				{
-					manager.changePlayer(); // Switch character
-				}
-			}
-		}
-
-		// Input for leader only
-		if (Keyboard::isKeyPressed(Keyboard::Right))
-			manager.getLeader()->moveRight();
-		else if (Keyboard::isKeyPressed(Keyboard::Left))
-			manager.getLeader()->moveLeft();
-		else
-			manager.getLeader()->setVelocityX(0); // Stop if no key pressed
-
-		if (Keyboard::isKeyPressed(Keyboard::Space))
-			manager.getLeader()->jump();
-
-		if (Keyboard::isKeyPressed(Keyboard::LShift))
-			manager.getLeader()->useSpecialAbility();
-
-		// Update all players' physics
-		for (int i = 0; i < 3; ++i)
-		{
-			manager.getPlayer(i)->updatePhysics();
-
-			// Floor collision for each
-			if (manager.getPlayer(i)->getYPosition() >= 600)
-			{
-				manager.getPlayer(i)->setYPosition(600);
-				manager.getPlayer(i)->setVelocityY(0);
-				manager.getPlayer(i)->setOnGround(true);
-			}
-		}
-
-		// Update followers logic (sets velocity)
-		manager.updateFollowers();
-		manager.checkPitRespawns();
-
-		// Rendering
-		window.clear(Color::Black);
-		for (int i = 0; i < 3; ++i)
-		{
-			const Sprite& sprite = manager.getPlayer(i)->getSprite();
-			Sprite s = sprite;
-			s.setPosition(manager.getPlayer(i)->getXposition(), manager.getPlayer(i)->getYPosition());
-			window.draw(s);
-		}
-		window.display();
-	}
-
-
-	return 0;
-}
-

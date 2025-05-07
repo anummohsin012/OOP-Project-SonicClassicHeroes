@@ -15,10 +15,14 @@ protected:
 	//static bool soundLoaded;
 public:
 	Collectibles(int r, int c) :row(r), column(c) {}
-	virtual void draw(float cell_size, RenderWindow& window) = 0;
+	void draw(float cell_size, RenderWindow& window, float offset)
+	{
+		sprite.setPosition(column * cell_size - offset, getY(cell_size));
+		window.draw(sprite);
+	}
 	virtual void collect(char** lvl) = 0;
 	virtual ~Collectibles(){}
-	virtual void playSound() = 0;
+	/*virtual void playSound() = 0;*/
 
 	float getX(float cell_size) const 
 	{ 
@@ -31,103 +35,95 @@ public:
 };
 
 class Rings:public Collectibles{
-	static SoundBuffer ringSound;
-	static bool ringSoundLoaded;
+	//static SoundBuffer ringSound;
+	//static bool ringSoundLoaded;
 public:
 	Rings(int r,int c, char** lvl):Collectibles(r,c)
 	{
-		texture.loadFromFile("Date/ring.png");
+		texture.loadFromFile("Data/ring.png");
 		sprite.setTexture(texture);
+		sprite.setScale(1.5f, 1.5f);
+
 		lvl[r][c] = 'R';
-	}
-	virtual void draw(float cell_size, RenderWindow& window) override 
-	{
-		sprite.setPosition(getX(cell_size), getY(cell_size));
-		window.draw(sprite);
 	}
 	virtual void collect(char** lvl)
 	{
 		lvl[row][column] = ' ';
 	}
-	virtual void playSound() 
-	{
-		if (!ringSoundLoaded) 
-		{
-			ringSound.loadFromFile("Data/Ring.wav");
-			ringSoundLoaded = true;
-		}
-		Sound sound(ringSound);
-		sound.play();
-	}
-	virtual~ Rings(){}
+	//virtual void playSound() 
+	//{
+	//	if (!ringSoundLoaded) 
+	//	{
+	//		ringSound.loadFromFile("Data/Ring.wav");
+	//		ringSoundLoaded = true;
+	//	}
+	//	Sound sound(ringSound);
+	//	sound.play();
+	//}
+	~ Rings(){}
 };
-SoundBuffer Rings::ringSound;
-bool Rings::ringSoundLoaded = false;
+//SoundBuffer Rings::ringSound;
+//bool Rings::ringSoundLoaded = false;
 
 
 class ExtraLives: public Collectibles {
-	static SoundBuffer lifeSound;
-	static bool lifeSoundLoaded;
+	//static SoundBuffer lifeSound;
+	//static bool lifeSoundLoaded;
 public:
 	ExtraLives(int r, int c, char** lvl) : Collectibles(r, c)
 	{
-		texture.loadFromFile("Date/life.png");
+		texture.loadFromFile("Data/life.png");
 		sprite.setTexture(texture);
+		sprite.setScale(3.0f, 3.0f);
+
 		lvl[r][c] = 'L';
 	}
-	virtual void draw(float cell_size, RenderWindow& window) override 
-	{
-		sprite.setPosition(getX(cell_size), getY(cell_size));
-		window.draw(sprite);
-	}
+	
 	virtual void collect(char** lvl)
 	{
 		lvl[row][column] = ' ';
 	}
-	virtual~ ExtraLives(){}
-	virtual void playSound() {
+	~ ExtraLives(){}
+	/*virtual void playSound() {
 		if (!lifeSoundLoaded) {
 			lifeSound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Stage\LargeBooster.wav");
 			lifeSoundLoaded = true;
 		}
 		Sound sound(lifeSound);
 		sound.play();
-	}
+	}*/
 };
-SoundBuffer ExtraLives::lifeSound;
-bool ExtraLives::lifeSoundLoaded = false;
+//SoundBuffer ExtraLives::lifeSound;
+//bool ExtraLives::lifeSoundLoaded = false;
 
 class SpecialAbility: public Collectibles {
-	static SoundBuffer abilitySound;
-	static bool abilitySoundLoaded;
+	//static SoundBuffer abilitySound;
+	//static bool abilitySoundLoaded;
 public:
 	SpecialAbility(int r, int c, char** lvl) : Collectibles(r, c)
 	{
-		texture.loadFromFile("Date/bonus.png");
+		texture.loadFromFile("Data/bonus.png");
 		sprite.setTexture(texture);
+		sprite.setScale(3.0f,3.0f);
 		lvl[r][c] = 'A';
 	}
-	virtual void draw(float cell_size, RenderWindow& window) override 
-	{
-		sprite.setPosition(getX(cell_size), getY(cell_size));
-		window.draw(sprite);
-	}
+	
 	virtual void collect(char** lvl)
 	{
 		lvl[row][column] = ' ';
 	}
-	virtual void playSound() {
-		if (!abilitySoundLoaded) {
-			abilitySound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Global\SpecialRing.wav");
-			abilitySoundLoaded = true;
-		}
-		Sound sound(abilitySound);
-		sound.play();
-	}
-	virtual ~SpecialAbility(){}
+	//virtual void playSound() {
+	//	if (!abilitySoundLoaded) {
+	//		abilitySound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Global\SpecialRing.wav");
+	//		abilitySoundLoaded = true;
+	//	}
+	//	Sound sound(abilitySound);
+	//	sound.play();
+	//}
+	~SpecialAbility(){}
 };
-SoundBuffer SpecialAbility::abilitySound;
-bool SpecialAbility::abilitySoundLoaded = false;
+//SoundBuffer SpecialAbility::abilitySound;
+//bool SpecialAbility::abilitySoundLoaded = false;
 
 class CollectibleFactory {
 	int size;
@@ -171,6 +167,7 @@ private:
 		collectibles = temp;
 
 	}
+
 public:
 	virtual ~CollectibleFactory()
 	{
@@ -186,4 +183,23 @@ public:
 	{ 
 		return current; 
 	}
+
+
+
+	void removeCollectible(int index) {
+		if (index < 0 || index >= current) return;
+
+		// Delete the object
+		delete collectibles[index];
+
+		// Shift remaining elements to fill the gap
+		for (int i = index; i < current - 1; i++) {
+			collectibles[i] = collectibles[i + 1];
+		}
+
+		// Set the last position to nullptr and decrease count
+		collectibles[current - 1] = nullptr;
+		current--;
+	}
+
 };

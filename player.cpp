@@ -83,26 +83,24 @@ public:
 				player_x = next_x;
 			}
 		}
-
-		//veritcal collsiosn
 		int top_row = (int)(next_y + HITBOX_TOP) / cell_size;
-		int bottom_row =  (int)(next_y + HITBOX_BOTTOM) / cell_size; 
+		int bottom_row = (int)(next_y + HITBOX_BOTTOM) / cell_size;
 		int mid_col = (int)(player_x + horizontal_mid) / cell_size;
 
 		//  bounds
-		if (mid_col >= 0 && mid_col < width) 
-		{ 
-			if (bottom_row >= 0 && bottom_row < height && lvl[bottom_row][mid_col] == 'w') 
+		if (mid_col >= 0 && mid_col < width)
+		{
+			if (bottom_row >= 0 && bottom_row < height && (lvl[bottom_row][mid_col] == 'w'|| lvl[bottom_row][mid_col] == 's'))
 			{
 				player_y = bottom_row * cell_size - HITBOX_BOTTOM; //snap to ground
 				velocity_y = 0;
 				onground = true;
 			}
-			else if (top_row >= 0 && top_row < height && lvl[top_row][mid_col] == 'w') 
+			else if (top_row >= 0 && top_row < height && (lvl[bottom_row][mid_col] == 'w' || lvl[bottom_row][mid_col] == 's'))
 			{
 				velocity_y = 0; //cieling hit
 			}
-			else 
+			else
 			{
 				player_y = next_y;
 				onground = false;
@@ -163,13 +161,13 @@ public:
 	}
 	void respawn(float leader_x, float leader_y) 
 	{
-		player_x = leader_x + 50.f; //follower spawns next to leader as according to original logic
+		player_x = leader_x+50.0; //follower spawns next to leader as according to original logic
 		player_y = leader_y;
 		velocity_x = 0;
 		velocity_y = 0;
 		onground = true;
 	}
-	void respawnLeader()
+	virtual bool isInvincible() = 0;
 };
 
 
@@ -314,7 +312,11 @@ public:
 			setSprite();
 		}
 	}
-	virtual ~Sonic() override = default;
+	virtual ~Sonic() override{}
+	virtual bool isInvincible() override
+	{
+		return false;
+	}
 
 };
 
@@ -468,7 +470,11 @@ public:
 			setSprite();
 		}
 	}
-	virtual ~Tails() override = default;
+	virtual ~Tails() override{}
+	virtual bool isInvincible() override
+	{
+		return false;
+	}
 };
 
 
@@ -538,7 +544,7 @@ bool facingRight;
 				}
 			}
 		}
-		void moveLeft(char** lvl, float cell_size) override
+		virtual void moveLeft(char** lvl, float cell_size) override
 		{
 			int left_col = (int)(player_x + HITBOX_LEFT - speed) / cell_size;
 			int mid_row = (int)(player_y + (HITBOX_TOP + HITBOX_BOTTOM) / 2) / cell_size;
@@ -593,7 +599,11 @@ bool facingRight;
 		{
 			isTheLeader = l;
 		}
-		virtual ~Knuckles() override = default;
+		virtual ~Knuckles() override{}
+		virtual bool isInvincible() override
+		{
+			return invincible;
+		}
 };
 class PlayerFactory {
 public:
@@ -620,7 +630,7 @@ class PlayerManager {
 	float cell_size;
 	int height, width;
 public:
-	PlayerManager(PlayerFactory& factory,char** lvl, int h, int w) :lives(3), currentPlayer(0), pitThreshold(730.0f), gameover(false),lvl(lvl),cell_size(64),height(h),width(w)
+	PlayerManager(PlayerFactory& factory,char** lvl, int h, int w) :lives(3), currentPlayer(0), pitThreshold(800), gameover(false),lvl(lvl),cell_size(64),height(h),width(w)
 	{
 		players[0] = factory.createPlayer("Sonic", 100, 100,h,w);     //upcasting from child to parent
 		players[1] = factory.createPlayer("Tails", 50, 100,h,w);
@@ -694,24 +704,69 @@ public:
 	}
 	void removeLife()
 	{
-		if (lives - 1 == 0)
+		if (lives<=0)
 		{
-			lives -= 1;
 			gameover = true;
+			return;
 		}
 		else
 		lives -= 1;
 	}
-	void checkPitRespawns() {  // New method
+	void checkPitRespawns() {
 		Player* leader = getLeader();
 
-		for (int i = 0; i < 3; ++i) 
+		// Convert leader position to grid coordinates
+		int leader_col = leader->getXposition() / cell_size;
+		int leader_row = leader->getYPosition() / cell_size;
+
+		// Check if leader touched any pit cells (column 13 in this case)
+		if (leader_row >= 0 && leader_row < height && leader_col >= 0 && leader_col < width)
 		{
-			Player* p = players[i];
-			if (p->getYPosition() > pitThreshold) //for incase the followers fall into the pit 
+			if (lvl[leader_row][leader_col] == 'p') 
 			{
-				p->respawn(leader->getXposition() + 50.f, leader->getYPosition());
+				removeLife();
+				if (!gameover) 
+				{
+					// Respawn all players
+					float respawnX = max(100.f, leader->getXposition() - 200.f);
+					for (int i = 0; i < 3; ++i) {
+						players[i]->respawn(respawnX, 100.f);
+						players[i]->setVelocityX(0);
+						players[i]->setVelocityY(0);
+						players[i]->setOnGround(true);
+					}
+				}
+				return;
 			}
 		}
+
+		// Followers (existing behavior)
+		for (int i = 0; i < 3; ++i) {
+			if (i != currentPlayer) {
+				int follower_row = players[i]->getYPosition() / cell_size;
+				int follower_col = players[i]->getXposition() / cell_size;
+
+				if (follower_row >= 0 && follower_row < height &&
+					follower_col >= 0 && follower_col < width &&
+					lvl[follower_row][follower_col] == 'p')
+				{
+					players[i]->respawn(leader->getXposition(), 100.f);
+				}
+			}
+		}
+	}
+
+	// Remove leaderPitcheck() entirely - redundant
+	void leaderPitcheck(Player* p)
+	{
+		if (p->getYPosition() > pitThreshold) //for incase the leader falls into the pit 
+		{
+			p->respawn(p->getXposition() + 64, 100); //goes back a cell
+
+		}
+	}
+	bool isGameOver()
+	{
+		return gameover;
 	}
 };

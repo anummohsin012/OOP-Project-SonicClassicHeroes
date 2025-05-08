@@ -24,9 +24,12 @@ protected:
     Sprite wallSprite;
     Texture spikes;
     Sprite spikesSprite;
+    Text livesText;
+    Text ringsText;
+    Font font;
 public:
 	Levels(int h, int w, int rings, int e_l)
-		:height(h), width(w), cell_size(64), manager(playerfactory,lvl, height, width), lvl(new char* [height]), rings(rings), ringscollected(0), score(0), exlives(e_l), factory(rings+e_l)
+		:height(h), width(w), cell_size(64), lvl(new char* [height]), manager(playerfactory,lvl, height, width), rings(rings), ringscollected(0), score(0), exlives(e_l), factory(rings+e_l)
 	{
         for (int i = 0; i < height; i ++) 
         {
@@ -36,13 +39,13 @@ public:
                 lvl[i][j] = ' '; // Initialize all cells to empty
             }
         }
-        if (!lvlTex.loadFromFile("Data/lvl_layout.png"))
+        if (!lvlTex.loadFromFile("Data/bglvl1.png"))
         {
             return;
         }
 
         lvlSprite.setTexture(lvlTex);
-        lvlSprite.setScale((float)(width * cell_size) / lvlTex.getSize().x, 1.0f); //to stretch the background to the size of the window required
+        lvlSprite.setScale((float)(width * cell_size) / lvlTex.getSize().x, 3.0f); //to stretch the background to the size of the window required
 
         wall.loadFromFile("Data/brick1.png");
         wallSprite.setTexture(wall);
@@ -50,8 +53,26 @@ public:
         spikes.loadFromFile("Data/spike.png");
         spikesSprite.setTexture(spikes);
 
+        if (!font.loadFromFile("font/arial.ttf")) 
+        { 
+            cout << "Font didnt load\n";
+        }
+
+        // Setup lives text
+        livesText.setFont(font);
+        livesText.setCharacterSize(24);
+        livesText.setFillColor(Color::White);
+        livesText.setPosition(20, 20); // Top-left corner
+
+        // Setup rings text
+        ringsText.setFont(font);
+        ringsText.setCharacterSize(24);
+        ringsText.setFillColor(Color::White);
+        ringsText.setPosition(20, 50); // Below lives text
+
 	}
     virtual void drawCollectibles(RenderWindow& window, float scrollOffsetX) = 0;
+    virtual void setObstaclesandCollectibles() = 0;
     virtual void display_level(RenderWindow& window, const int height, const int width, char** lvl, Sprite& wallSprite1, const int cell_size,float offset) = 0;
     void playersInputs()
     {
@@ -104,6 +125,35 @@ public:
         }
     }
 
+    void collisionsWithSpikes(Player* player)
+    {
+        //players boundaries
+        float px_l = player->getXposition() + player->HITBOX_LEFT;
+        float px_r = player->getXposition() + player->HITBOX_RIGHT;
+        float py_t = player->getYPosition() + player->HITBOX_TOP;
+        float py_b = player->getYPosition() + player->HITBOX_BOTTOM;
+        for (int i = 0; i < height; i += 1)
+        {
+            for (int j = 0; j < width; j += 1)
+            {
+                if (lvl[i][j] == 's')
+                {
+                    float sx_l = j * cell_size;
+                    float sy_t = i * cell_size;
+                    float sx_r = (j+1) * cell_size;
+                    float sy_b = (i+1) * cell_size;
+
+                    if (!player->isInvincible()&& px_r > sx_l&& px_l < sx_r&& py_b> sy_t&& py_t < sy_b )
+                    {
+                        manager.removeLife();
+                        player->setVelocityY(-10.f);
+                        return;
+                    }
+
+                }
+            }
+        }
+    }
     void physics()
     {
         //physics
@@ -111,8 +161,11 @@ public:
         {
             manager.getPlayer(i)->updatePhysics();
             manager.getPlayer(i)->updatePhysicsWithCollision(lvl, cell_size);
-            checkCollectibles(manager.getPlayer(i), factory, lvl, cell_size);
+            
         }
+        checkCollectibles(manager.getLeader(), factory, lvl, cell_size); //only the leader collects collectibles or collides with the spikes
+        collisionsWithSpikes(manager.getLeader());
+
 
         //followers
         manager.updateFollowers();
@@ -129,9 +182,14 @@ public:
             s.setPosition(x, y);
             window.draw(s);
         }
-
         drawCollectibles(window, scrollOffsetX);
         display_level(window, height, width, lvl, wallSprite, 64, scrollOffsetX);
+
+        livesText.setString("Lives: " + to_string(manager.getLives()));
+        ringsText.setString("Rings: " + to_string(ringscollected));
+
+        window.draw(livesText);
+        window.draw(ringsText);
     }
     void run(RenderWindow& window) {
         float scrollOffsetX = 0.0f;
@@ -153,15 +211,19 @@ public:
             playersInputs();
             physics();
 
-            // Scroll logic
+            // scrolling
             float leaderX = manager.getLeader()->getXposition();
             scrollOffsetX = leaderX - 640;
-            if (scrollOffsetX < 0) scrollOffsetX = 0;
-            float maxScrollX = (width * cell_size) - 1280; // 1280 = window width
+            if (scrollOffsetX < 0)  //meaning when we havent scrolled at all
+                scrollOffsetX = 0;
+            float maxScrollX = (width * cell_size) - 1280; //1280 = window width
             if (scrollOffsetX > maxScrollX)
                 scrollOffsetX = maxScrollX;
 
-            // Render
+
+
+
+            //render
             window.clear(Color::Black);
             render(window, scrollOffsetX);
             window.display();
@@ -180,24 +242,55 @@ public:
 class Level1 :public Levels {
 public:
     Level1():Levels(14,200,5,1)
+    { 
+        setObstaclesandCollectibles();
+    }
+    virtual void setObstaclesandCollectibles() override
     {
-        for (int i = 0;i < 200;i++)
+
+        lvl[11][8] = 'w';
+        for (int i = 10;i < 30;i++)
         {
-            lvl[12][i] = 'w';
+            lvl[9][i] = 'w';
         }
-        for (int i = 14;i < 16;i++)
-            lvl[12][i] = 'w';
-        for (int i = 24;i < 27;i++)
-            lvl[8][i] = 'w';
-        for (int i = 19;i < 24;i++)
-            lvl[11][i] = 'w';
+        for (int i = 30;i < 35;i+=2)
+        {
+            lvl[7][i] = 'w';
+            factory.spawn(new Rings(5, i, lvl));
+        }
+        for (int i = 35;i < 45;i++)
+        {
+            lvl[5][i] = 'w';
+        }
+        factory.spawn(new ExtraLives(3, 40, lvl));
+
+        for (int i = 0;i < 200;i++) //originally setting wall on the whole ground
+        {
+            lvl[12][i] = 'w'; 
+        }
+        //tails special region so it can fly  over it
+        factory.spawn(new SpecialAbility(11, 48, lvl));
+        for (int i = 50;i < 75;i++)
+        {
+            lvl[12][i] = 's';
+        }
+        
+        //sonic special region so it can run over it very fast
+        factory.spawn(new SpecialAbility(11, 98, lvl));
+        for (int i = 100;i < 140;i += 4)
+        {
+            factory.spawn(new Rings(12, i, lvl));
+        }
+        for (int i = 100;i < 125;i++)
+        {
+            lvl[5][i] = 'w';
+        }
+        factory.spawn(new ExtraLives(10, 115, lvl));
 
 
-        factory.spawn(new Rings(8, 14,lvl));
-        factory.spawn(new Rings(10, 25, lvl));
-        factory.spawn(new Rings(7, 26, lvl));
-        factory.spawn(new ExtraLives(10, 2, lvl));
-        factory.spawn(new SpecialAbility(10, 30, lvl));
+        for (int i = 10;i < 11;i++)
+            lvl[12][i] = 'p';
+
     }
     virtual void drawCollectibles(RenderWindow& window, float offset ) override 
     {
@@ -228,7 +321,7 @@ public:
 };
 int main()
 {
-    RenderWindow window(VideoMode(1200, 900), "Sonic Classic Heroes");
+    RenderWindow window(VideoMode(1200, 896), "Sonic Classic Heroes");
     window.setFramerateLimit(60);
 
     Level1 level;

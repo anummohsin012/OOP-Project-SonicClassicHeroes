@@ -27,12 +27,6 @@ public:
         if (alive) {
             sprite.setPosition(x - scrollOffsetX, y);
             window.draw(sprite);
-
-            //RectangleShape hitboxShape;
-            //hitboxShape.setPosition(getLeft(), getTop());
-            //hitboxShape.setSize(Vector2f(hitboxr - hitboxl, hitboxb - hitboxt));
-            //hitboxShape.setFillColor(Color(255, 0, 0, 100)); // Semi-transparent red
-            //window.draw(hitboxShape);
         }
     }
     void takeDamage() {
@@ -233,6 +227,22 @@ public:
 
 
 class Flyer : public Enemy {
+protected:
+    bool shouldTurnAround(char** lvl, float cell_size) {
+        // Use absolute world coordinates (no scrolling adjustment needed)
+        float checkFront = (speed > 0) ? getRight() + 1 : getLeft() - 1;
+        float checkY = getBottom() - 5; // Check slightly above feet
+
+        // Convert to grid coordinates
+        int cellX = static_cast<int>(checkFront / cell_size);
+        int cellY = static_cast<int>(checkY / cell_size);
+
+        // Boundary check
+        if (cellX < 0 || cellX >= width /*|| cellY < 0 || cellY >= height*/)
+            return true;
+
+        return (lvl[cellY][cellX] == 'w' || lvl[cellY][cellX] == 'v');
+    }
 public:
     Flyer(float x, float y, float spd, int hp, int w, int h) : Enemy(x, y, spd, hp, w, h,0,0,0,0) {}
     virtual void movement() = 0;
@@ -252,21 +262,33 @@ public:
         hitboxt = 0;         
         hitboxb = 105.0f;
     }
-    void movement() override {}
+    void movement() override {
+        
+    }
     void updateposi(const Player* player, char** lvl, float cell_size) override {
+        if (shouldTurnAround(lvl, cell_size)) {
+            speed = -speed;
+            faceright = !faceright;
+        }
         if (player->getXposition() < x) {
             x -= speed;
+    
+        }
+        else {
+            x += speed;
+
+        }
+        if (faceright == true) {
             texture.loadFromFile("Data/batbrain2.png");
             sprite.setTexture(texture);
             sprite.setScale(1.0f, 1.0f);
         }
         else {
-            x += speed;
             texture.loadFromFile("Data/batbrain3.png");
             sprite.setTexture(texture);
             sprite.setScale(1.0f, 1.0f);
-
         }
+        sprite.setPosition(x, y);
 
         if (player->getYPosition() < y) {
             y -= speed;
@@ -283,6 +305,7 @@ private:
     float angle;
     float startY;
     float leftBound, rightBound;
+    bool faceright;
 
 public:
     BeeBot(float x, float y, int w, int h)
@@ -292,10 +315,15 @@ public:
         sprite.setScale(1.0f, 1.0f);
 
         leftBound = x - 150;  
+        hitboxl = 0;
+        hitboxr = 100.0f;
+        hitboxt = 0;
+        hitboxb = 60.0f;
         
     }
 
     void movement() override {
+
         x += speed;
 
         if (x < leftBound )
@@ -305,6 +333,10 @@ public:
         angle += 0.05f;
     }
     void updateposi(const Player* player, char** lvl, float cell_size) override {
+        if (shouldTurnAround(lvl, cell_size)) {
+            speed = -speed;
+            faceright = !faceright;
+        }
         x += speed;
         movement();
     }
@@ -324,6 +356,10 @@ public:
         texture.loadFromFile("Data/boss.png");
         sprite.setTexture(texture);
         sprite.setScale(1.0f, 1.0f);
+        hitboxl = 0;
+        hitboxr = 148.0f;
+        hitboxt = 0;
+        hitboxb = 128.0f;
 
     }
     void movement() override {

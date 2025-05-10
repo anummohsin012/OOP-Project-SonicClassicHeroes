@@ -38,13 +38,14 @@ protected:
     Texture dooropen;
     Texture doorclosed;
     Sprite door;
-   /* Enemy** enemies;
     int enemyCapacity;
-    int enemyCount;*/
-
+    int enemyCount;
+    Enemy** enemies;
+    Text scoreText;
 public:
 	Levels(int h, int w, int rings, int e_l, float a, float g,float duration, Timer& timer)
-		:height(h), width(w), cell_size(64), lvl(new char* [height]), manager(playerfactory,lvl, height, width,a, g), rings(rings), ringscollected(0), score(0), exlives(e_l), factory(rings+e_l), lvlTime(duration),lvltimer(&timer)/*enemyCount(0),enemyCapacity(1)*/
+		:height(h), width(w), cell_size(64), lvl(new char* [height]), manager(playerfactory,lvl, height, width,a, g), rings(rings), ringscollected(0), score(0), exlives(e_l), factory(rings+e_l), lvlTime(duration),lvltimer(&timer)
+        ,enemies(new Enemy*[enemyCapacity]), enemyCount(0), enemyCapacity(3)
 	{
         for (int i = 0; i < height; i ++) 
         {
@@ -96,7 +97,17 @@ public:
         lvltimer->start();
 
         dooropen.loadFromFile("Data/dooropen.png");
-        doorclosed.loadFromFile("Data/doorclosed.png");
+        doorclosed.loadFromFile("Data/closeddoor.png");
+
+        scoreText.setFont(font);
+        scoreText.setCharacterSize(24);
+        scoreText.setFillColor(Color::White);
+        scoreText.setPosition(20, 80); 
+
+        for (int i = 0;i < enemyCapacity;i++)
+        {
+            enemies[i] = nullptr;
+        }
 	}
     void updateTimerDisplay() {
         float remaining = lvltimer->getRemainingTime();
@@ -248,37 +259,37 @@ public:
         checkCollectibles(manager.getLeader(), factory, lvl, cell_size); //only the leader collects collectibles or collides with the spikes
         collisionsWithSpikes(manager.getLeader());
         manager.checkPits();
-
+        int enemiesKilled=Enemy::checkcollision(manager, enemies, enemyCount);
+        score += enemiesKilled * 50; //killing one enemy gives 50 points
         //followers
         manager.updateFollowers();
-        //manager.checkPitRespawns();
     }
-    //void addEnemy(int type, float x, float y) {
-    //    if (enemyCount >= enemyCapacity) {
-    //        // Resize array
-    //        enemyCapacity *= 2;
-    //        Enemy** newEnemies = new Enemy * [enemyCapacity];
-    //        for (int i = 0; i < enemyCount; ++i)
-    //            newEnemies[i] = enemies[i];
-    //        delete[] enemies;
-    //        enemies = newEnemies;
-    //    }
+    void addEnemy(int type, float x, float y) {
+        if (enemyCount >= enemyCapacity) {
+            // Resize array
+            enemyCapacity *= 2;
+            Enemy** newEnemies = new Enemy * [enemyCapacity];
+            for (int i = 0; i < enemyCount; ++i)
+                newEnemies[i] = enemies[i];
+            delete[] enemies;
+            enemies = newEnemies;
+        }
 
-    //    enemies[enemyCount++] = EnemyFactory::createEnemy(type, x, y, width, height);
-    //}
+        enemies[enemyCount++] = EnemyFactory::createEnemy(type, x, y, width, height);
+    }
 
-    //void updateEnemies(Player* player, char** lvl, float cellSize) {
-    //    for (int i = 0; i < enemyCount; ++i) {
-    //        if (enemies[i] && enemies[i]->isAlive())
-    //            enemies[i]->updateposi(player, lvl, cellSize);
-    //    }
-    //}
-    //void drawEnemies(RenderWindow& window) {
-    //    for (int i = 0; i < enemyCount; ++i) {
-    //        if (enemies[i] && enemies[i]->isAlive())
-    //            enemies[i]->draw(window);
-    //    }
-    //}
+    void updateEnemies(Player* player, char** lvl, float cellSize) {
+        for (int i = 0; i < enemyCount; ++i) {
+            if (enemies[i] && enemies[i]->isAlive())
+                enemies[i]->updateposi(player, lvl, cellSize);
+        }
+    }
+    void drawEnemies(RenderWindow& window, float scrollOffsetx) {
+        for (int i = 0; i < enemyCount; ++i) {
+            if (enemies[i] && enemies[i]->isAlive())
+                enemies[i]->draw(window,scrollOffsetx);
+        }
+    }
 
     void render(RenderWindow& window, float scrollOffsetX) {
         lvlSprite.setPosition(-scrollOffsetX, 0);
@@ -298,10 +309,12 @@ public:
 
         livesText.setString("Lives: " + to_string(manager.getLives()));
         ringsText.setString("Rings: " + to_string(ringscollected));
+        scoreText.setString("Score: " + to_string(score));
 
         window.draw(livesText);
         window.draw(ringsText);
-        /*drawEnemies(window);*/
+        window.draw(scoreText);
+        drawEnemies(window, scrollOffsetX);
         drawTimer(window);
     }
     void run(RenderWindow& window) {
@@ -326,6 +339,7 @@ public:
 
             playersInputs();
             physics();
+            updateEnemies(manager.getLeader(), lvl, cell_size);
 
             // scrolling
             float leaderX = manager.getLeader()->getXposition();
@@ -352,6 +366,12 @@ public:
             delete[] lvl[i];
         }
         delete[] lvl;
+
+        for (int i = 0; i < enemyCount; ++i) 
+        {
+            delete enemies[i];
+        }
+        delete[] enemies;
     }
 
 };
@@ -388,41 +408,47 @@ public:
             lvl[13][i] = 'w';
         }
 
-        factory.spawn(new Rings(10, 8, lvl));
-        for (int i = 10;i < 14;i++)
-        {
-            lvl[10][i] = 'w';
+        for (int row = 10; row <= 12; row++) {
+            lvl[row][5] = 'w'; // Left wall
+            lvl[row][10] = 'w'; // Right wall
         }
-        for (int i = 14;i < 22;i++)
-        {
-            lvl[8][i] = 'w';
-        }
-        for (int i = 22;i < 42;i%2==0?i+=1:i+=2)
-        {
-            lvl[6][i] = 'w';
-        }
-        for (int i = 44;i < 54;i+=1)
-        {
-            lvl[5][i] = 'w';
-        }
-        for (int i = 54;i < 64;i += 2)
-        {
-            lvl[5][i] = 'w';
-        }
-        factory.spawn(new SpecialAbility(11, 22, lvl));
+        addEnemy(1, 7 * cell_size, 11 * cell_size);
 
-        lvl[11][24] = 'v';
-        lvl[11][30] = 'v';
-        lvl[11][38] = 'v';
+        //factory.spawn(new Rings(10, 8, lvl));
+        //for (int i = 10;i < 14;i++)
+        //{
+        //    lvl[10][i] = 'w';
+        //}
+        //for (int i = 14;i < 22;i++)
+        //{
+        //    lvl[8][i] = 'w';
+        //}
+        //for (int i = 22;i < 42;i%2==0?i+=1:i+=2)
+        //{
+        //    lvl[6][i] = 'w';
+        //}
+        //for (int i = 44;i < 54;i+=1)
+        //{
+        //    lvl[5][i] = 'w';
+        //}
+        //for (int i = 54;i < 64;i += 2)
+        //{
+        //    lvl[5][i] = 'w';
+        //}
+        //factory.spawn(new SpecialAbility(11, 22, lvl));
+
+        //lvl[11][24] = 'v';
+        //lvl[11][30] = 'v';
+        //lvl[11][38] = 'v';
 
 
-        for (int i = 48;i < 50;i += 1)
-        {
-            lvl[12][i] = 'p';
-            lvl[13][i] = 'p';
-        }
-
-
+        //for (int i = 48;i < 50;i += 1)
+        //{
+        //    lvl[12][i] = 'p';
+        //    lvl[13][i] = 'p';
+        //}
+        //lvl[11][15] = 'w'; // Wall
+        //addEnemy(0, 12 * 64, 11 * 64);
         //for (int i = 10;i < 30;i++)
         //{
         //    lvl[9][i] = 'w';

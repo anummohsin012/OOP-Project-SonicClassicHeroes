@@ -1,3 +1,7 @@
+#ifndef PLAYER_CPP  
+#define PLAYER_CPP
+
+
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -804,3 +808,5 @@ void checkPits()
 		return gameover;
 	}
 };
+
+#endif

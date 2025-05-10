@@ -1,6 +1,7 @@
 #include "player.cpp"
 #include "collectables.cpp"
 #include "timer.cpp"
+#include "enemies.cpp"
 
 using namespace std;
 using namespace sf;
@@ -37,10 +38,13 @@ protected:
     Texture dooropen;
     Texture doorclosed;
     Sprite door;
+   /* Enemy** enemies;
+    int enemyCapacity;
+    int enemyCount;*/
 
 public:
 	Levels(int h, int w, int rings, int e_l, float a, float g,float duration, Timer& timer)
-		:height(h), width(w), cell_size(64), lvl(new char* [height]), manager(playerfactory,lvl, height, width,a, g), rings(rings), ringscollected(0), score(0), exlives(e_l), factory(rings+e_l), lvlTime(duration),lvltimer(&timer)
+		:height(h), width(w), cell_size(64), lvl(new char* [height]), manager(playerfactory,lvl, height, width,a, g), rings(rings), ringscollected(0), score(0), exlives(e_l), factory(rings+e_l), lvlTime(duration),lvltimer(&timer)/*enemyCount(0),enemyCapacity(1)*/
 	{
         for (int i = 0; i < height; i ++) 
         {
@@ -249,6 +253,33 @@ public:
         manager.updateFollowers();
         //manager.checkPitRespawns();
     }
+    //void addEnemy(int type, float x, float y) {
+    //    if (enemyCount >= enemyCapacity) {
+    //        // Resize array
+    //        enemyCapacity *= 2;
+    //        Enemy** newEnemies = new Enemy * [enemyCapacity];
+    //        for (int i = 0; i < enemyCount; ++i)
+    //            newEnemies[i] = enemies[i];
+    //        delete[] enemies;
+    //        enemies = newEnemies;
+    //    }
+
+    //    enemies[enemyCount++] = EnemyFactory::createEnemy(type, x, y, width, height);
+    //}
+
+    //void updateEnemies(Player* player, char** lvl, float cellSize) {
+    //    for (int i = 0; i < enemyCount; ++i) {
+    //        if (enemies[i] && enemies[i]->isAlive())
+    //            enemies[i]->updateposi(player, lvl, cellSize);
+    //    }
+    //}
+    //void drawEnemies(RenderWindow& window) {
+    //    for (int i = 0; i < enemyCount; ++i) {
+    //        if (enemies[i] && enemies[i]->isAlive())
+    //            enemies[i]->draw(window);
+    //    }
+    //}
+
     void render(RenderWindow& window, float scrollOffsetX) {
         lvlSprite.setPosition(-scrollOffsetX, 0);
         window.draw(lvlSprite);
@@ -257,6 +288,7 @@ public:
             Sprite s = manager.getPlayer(i)->getSprite();
             float x = manager.getPlayer(i)->getXposition() - scrollOffsetX;
             float y = manager.getPlayer(i)->getYPosition();
+
             s.setPosition(x, y);
             window.draw(s);
         }
@@ -269,6 +301,7 @@ public:
 
         window.draw(livesText);
         window.draw(ringsText);
+        /*drawEnemies(window);*/
         drawTimer(window);
     }
     void run(RenderWindow& window) {
@@ -331,6 +364,9 @@ public:
     }
     virtual void setObstaclesandCollectibles() override
     {
+
+        /*addEnemy(1, 150.0f, 200.0f); 
+        addEnemy(2, 300.0f, 150.0f);*/
         //basic level layout
         for (int i = 0;i < 200;i++) //originally setting wall on the whole ground
         {

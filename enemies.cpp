@@ -271,9 +271,48 @@
 //    }
 //};
 //
-//class EggStinger(float x, float y, int w, int h) {
+//class EggStinger : public Flyer {
+//private:
+//    float timer;
+//    Clock clock;
+//    bool goingdown;
+//    float gdtime;
+//    float xx;
+//    float yy;
+//public:
+//    EggStinger(float x, float y, int w, int h): Flyer(x, y, 1.0f, 20, w, h),timer(0),goingdown(false),gdtime(10.0f),yy(6){
+//        texture.loadFromFile("Data/boss.png");
+//        sprite.setTexture(texture);
+//        sprite.setScale(1.0f, 1.0f);
 //
-//}
+//    }
+//    void movement() override {
+//        x += speed;
+//        if (x < 200 || x > width * 64 - 200)
+//            speed = -speed;
+//        float elapsed = clock.getElapsedTime().asSeconds();
+//        if (elapsed >= gdtime) {
+//            clock.restart();
+//            goingdown= true;
+//            xx = x;
+//        }
+//        while (goingdown) {
+//            y += 5.0f;
+//            if (y >= yy) {
+//                y =yy;
+//                goingdown = false;
+//            }
+//        }
+//    }
+//    void updateposi(const Player* player, char** lvl, float cell_size) override {
+//        movement();
+//    }
+//
+//    void draw(RenderWindow& window) override {
+//        Enemy::draw(window);
+//    }
+//
+//};
 //
 //
 //class EnemyFactory {
@@ -287,116 +326,13 @@
 //            return new BatBrain(x, y, width, height);
 //        else if (type == 3)
 //            return new BeeBot(x, y, width, height);
+//        else if (type == 4)
+//            return new EggStinger(x, y, width, height);
 //        else
 //            return nullptr;
 //    }
 //};
 //
-//int main() {
-//    const int height = 14, width = 200, cell_size = 64;
-//
-//    char** lvl = new char* [height];
-//    for (int i = 0; i < height; ++i) {
-//        lvl[i] = new char[width];
-//        for (int j = 0; j < width; ++j)
-//            lvl[i][j] = ' ';
-//    }
-//    for (int j = 0; j < width; ++j)
-//        lvl[13][j] = 'w'; 
-//
-//    RenderWindow window(VideoMode(1280, 720), "Sonic Classic Heroes Test");
-//    window.setFramerateLimit(60);
-//
-//    PlayerFactory factory;
-//    PlayerManager manager(factory, lvl, height, width,1,1);
-//
-//    // Setup enemies
-//    Enemy* enemies[4];
-//    enemies[0] = EnemyFactory::createEnemy(0, 500, 700, width, height);  // Motobug
-//    enemies[1] = EnemyFactory::createEnemy(1, 900, 700, width, height);  // CrabMeat
-//    enemies[2] = EnemyFactory::createEnemy(2, 1300, 500, width, height); // BatBrain
-//    enemies[3] = EnemyFactory::createEnemy(3, 700, 200, width, height); // BeeBot
-//
-//    Event ev;
-//
-//    while (window.isOpen()) {
-//        while (window.pollEvent(ev)) {
-//            if (ev.type == Event::Closed)
-//                window.close();
-//            if (ev.type == Event::KeyPressed) {
-//                if (ev.key.code == Keyboard::Tab)
-//                    manager.changePlayer(); // Switch character
-//            }
-//        }
-//
-//        // Input for leader only
-//        if (Keyboard::isKeyPressed(Keyboard::Right))
-//            manager.getLeader()->moveRight(lvl, cell_size);
-//        else if (Keyboard::isKeyPressed(Keyboard::Left))
-//            manager.getLeader()->moveLeft(lvl, cell_size);
-//        else
-//            manager.getLeader()->setVelocityX(0); // Stop if no key pressed
-//
-//        if (Keyboard::isKeyPressed(Keyboard::Space))
-//            manager.getLeader()->jump();
-//
-//        if (Keyboard::isKeyPressed(Keyboard::LShift))
-//            manager.getLeader()->useSpecialAbility();
-//
-//        // Update physics and ground collision
-//        for (int i = 0; i < 3; ++i) {
-//            manager.getPlayer(i)->updatePhysics();
-//            if (manager.getPlayer(i)->getYPosition() >= 600) {
-//                manager.getPlayer(i)->setYPosition(600);
-//                manager.getPlayer(i)->setVelocityY(0);
-//                manager.getPlayer(i)->setOnGround(true);
-//            }
-//        }
-//
-//        // Update enemy AI
-//        for (int i = 0; i < 4; ++i)
-//            if (enemies[i] && enemies[i]->isAlive())
-//                enemies[i]->updateposi(manager.getLeader(), lvl, (float)cell_size);
-//
-//        // Update followers logic
-//        manager.updateFollowers();
-//        manager.checkPits();
-//
-//        Enemy::checkcollision(manager, enemies, 4);
-//
-//
-//        // Rendering
-//        window.clear(Color::Black);
-//
-//        for (int i = 0; i < 3; ++i) {
-//            const Sprite& sprite = manager.getPlayer(i)->getSprite();
-//            Sprite s = sprite;
-//            s.setPosition(manager.getPlayer(i)->getXposition(), manager.getPlayer(i)->getYPosition());
-//            window.draw(s);
-//        }
-//
-//        for (int i = 0; i < 4; ++i)
-//            if (enemies[i] && enemies[i]->isAlive())
-//                enemies[i]->draw(window);
-//
-//
-//        CircleShape dummyCircle(15);
-//        dummyCircle.setFillColor(Color::Cyan);
-//        dummyCircle.setPosition(manager.getLeader()->getXposition(), manager.getLeader()->getYPosition());
-//        window.draw(dummyCircle);
-//
-//        window.display();
-//    }
-//
-//    // Cleanup
-//    for (int i = 0; i < 4; ++i)
-//        delete enemies[i];
-//    for (int i = 0; i < height; ++i)
-//        delete[] lvl[i];
-//    delete[] lvl;
-//
-//    return 0;
-//}
 //
 //
 //

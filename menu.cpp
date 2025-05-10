@@ -18,9 +18,10 @@ private:
 	Texture menubg;
 	Sprite menusp;
 	Music  menumus;
-	Music  hvsound;
-	Music selectsound;
-	
+	Sound hvsound;
+	Sound selectsound;
+	SoundBuffer selectsb;
+	SoundBuffer hoversb;
 	
 
 public:
@@ -53,16 +54,10 @@ public:
 		menumus.play();
 
 		
-		hvsound.openFromFile("Data/Jab.ogg");
-		
-		selectsound.openFromFile("Data/Select.ogg");
-		selectsound.setLoop(false);
-
-		hvsound.setLoop(false);
-		selectsound.setVolume(20);
-		hvsound.setVolume(20);
-		selectsound.play();
-		hvsound.play();
+		hoversb.loadFromFile("Data/MenuButton.ogg");
+		hvsound.setBuffer(hoversb);
+		selectsb.loadFromFile("Data/Select.ogg");
+		selectsound.setBuffer(selectsb);
 
 		
 
@@ -141,7 +136,7 @@ public:
 		void voldisplay() {
 			Texture menn;
 			Sprite menusp1;
-			if (!menn.loadFromFile("Data/volbg.jpeg")) {
+			if (!menn.loadFromFile("Data/menubgg2.jpeg")) {
 				cout << "Error: Could not load texturre!" << endl;
 			}
 			menusp1.setTexture(menn);

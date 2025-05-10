@@ -33,13 +33,16 @@ protected:
 	float abilityTime;
 	bool abilityIsActive;
 	int height, width; //of level
+	const float LEVEL_BOTTOM;
 public:
 	Player(float s,float a, float x, float y, float jump, float gr,int h,int w)
-		:speed(s),acceleration(a),player_x(x),player_y(y),velocity_x(0),velocity_y(0),jump_strenght(jump),gravity(gr), height(h),width(w){ }
+		:speed(s),acceleration(a),player_x(x),player_y(y),velocity_x(0),velocity_y(0),jump_strenght(jump),gravity(gr), height(h),width(w),LEVEL_BOTTOM(height*64),died(false){ }
 	virtual void moveRight(char** lvl, float cell_size) = 0;
 	virtual void moveLeft(char** lvl, float cell_size) = 0;
 	virtual void jump() = 0;
 	virtual void useSpecialAbility() = 0;
+	void setdead(bool d) { died = d; }
+	bool isdead() { return died; }
 
 	//hitboxes 
 //keeping the logic that our sprites are originally 40px by 40 px and then keeping offsets of 5 from each direction making it 30 by 30
@@ -50,55 +53,81 @@ public:
 
 	//functions where we apply physics
 
-	void updatePhysicsWithCollision(char** lvl, int cell_size) {
-		//finding midpoints
+	void updatePhysicsWithCollision(char** lvl, int cell_size)
+	{
+		// Midpoints for collision checks
 		const float vertical_mid = (HITBOX_TOP + HITBOX_BOTTOM) / 2;
 		const float horizontal_mid = (HITBOX_LEFT + HITBOX_RIGHT) / 2;
-		
-		//velocity
+
+		// Calculate next position
 		float next_x = player_x + velocity_x;
 		float next_y = player_y + velocity_y;
 
-		//using source logic to check for collisions 
-		int left_col =(int)(next_x + HITBOX_LEFT) / cell_size;
-		int right_col =  (int)(next_x + HITBOX_RIGHT) / cell_size; 
-		int mid_row =  (int)(player_y + vertical_mid) / cell_size;
+		// Horizontal collision check
+		int left_col = (int)(next_x + HITBOX_LEFT) / cell_size;
+		int right_col = (int)(next_x + HITBOX_RIGHT) / cell_size;
+		int mid_row = (int)(player_y + vertical_mid) / cell_size;
 
-		//checking bounds
-		if (mid_row >= 0 && mid_row < height) 
+		if (mid_row >= 0 && mid_row < height)
 		{
-
-			if (left_col >= 0 && left_col < width && lvl[mid_row][left_col] == 'w')  //collision from left
+			if (left_col >= 0 && left_col < width && (lvl[mid_row][left_col] == 'w' || lvl[mid_row][left_col] == 'v'))
 			{
-				velocity_x = 0;  //stop and freeze to grid boundary
-				player_x = (left_col + 1) * cell_size - HITBOX_LEFT;
+				if (lvl[mid_row][left_col] == 'v'&&isInvincible()) // If player is invincible, destroy the wall
+				{
+					lvl[mid_row][left_col] = ' '; // Remove the wall
+					player_x = next_x; // Continue moving
+				}
+				else // Normal collision
+				{
+					velocity_x = 0;
+					player_x = (left_col + 1) * cell_size - HITBOX_LEFT;
+				}
 			}
-			else if (right_col >= 0 && right_col < width && lvl[mid_row][right_col] == 'w')
+			else if (right_col >= 0 && right_col < width && (lvl[mid_row][right_col] == 'w' || lvl[mid_row][right_col] == 'v'))
 			{
-				velocity_x = 0;
-				player_x = right_col * cell_size - HITBOX_RIGHT;
+				if (lvl[mid_row][left_col] == 'v' && isInvincible()) // If player is invincible, destroy the wall
+				{
+					lvl[mid_row][right_col] = ' '; // Remove the wall
+					player_x = next_x; // Continue moving
+				}
+				else // Normal collision
+				{
+					velocity_x = 0;
+					player_x = right_col * cell_size - HITBOX_RIGHT;
+				}
 			}
-			else 
+			else
 			{
 				player_x = next_x;
 			}
 		}
+
+		// Vertical collision check
 		int top_row = (int)(next_y + HITBOX_TOP) / cell_size;
 		int bottom_row = (int)(next_y + HITBOX_BOTTOM) / cell_size;
 		int mid_col = (int)(player_x + horizontal_mid) / cell_size;
 
-		//  bounds
-		if (mid_col >= 0 && mid_col < width)
+		if (mid_col >= 0 && mid_col < width && bottom_row>=0 && bottom_row<height)
 		{
-			if (bottom_row >= 0 && bottom_row < height && (lvl[bottom_row][mid_col] == 'w'|| lvl[bottom_row][mid_col] == 's'))
+			if ((bottom_row >= 0 && bottom_row < height && (lvl[bottom_row][mid_col] == 'w' || lvl[bottom_row][mid_col] == 's')))
 			{
-				player_y = bottom_row * cell_size - HITBOX_BOTTOM; //snap to ground
+				player_y = bottom_row * cell_size - HITBOX_BOTTOM;
 				velocity_y = 0;
 				onground = true;
 			}
-			else if (top_row >= 0 && top_row < height && (lvl[bottom_row][mid_col] == 'w' || lvl[bottom_row][mid_col] == 's'))
+			else if (lvl[bottom_row][mid_col] == 'p')
 			{
-				velocity_y = 0; //cieling hit
+				// Pit - stand on it but mark for respawn
+				player_y = bottom_row * cell_size - HITBOX_BOTTOM;
+				velocity_y = 0;
+				onground = true;
+				died = true; // This will trigger respawn logic
+			}
+			else if (top_row >= 0 && top_row < height &&
+				(lvl[top_row][mid_col] == 'w'/* || lvl[top_row][mid_col] == 's'*/))
+			{
+				player_y = (top_row + 1) * cell_size - HITBOX_TOP;  // push player down
+				velocity_y += gravity;
 			}
 			else
 			{
@@ -114,6 +143,13 @@ public:
 		player_y += velocity_y;
 		if (!onground)
 			velocity_y += gravity;
+
+		if (player_y + HITBOX_BOTTOM > LEVEL_BOTTOM)  //setting a boundary check for the bottom
+		{
+			player_y = LEVEL_BOTTOM - HITBOX_BOTTOM;
+			velocity_y = 0;
+			onground = true;
+		}
 	}
 
 	//dealing with positions
@@ -213,8 +249,8 @@ class Sonic :public Player {
 	bool jumping;
 	bool facingRight;
 public:
-	Sonic(float x, float y, int h, int w)
-		:Player(18,0.5,x,y,-20,1, h,w), boostActive(false), moving(false),jumping(false), facingRight(true)
+	Sonic(float x, float y, int h, int w,float a, float g)
+		:Player(18,a,x,y,-15,g, h,w), boostActive(false), moving(false),jumping(false), facingRight(true)
 	{
 		abilityTime = 15.0f;  // eans the ability would last 15 secinds
 		abilityIsActive = false;
@@ -363,7 +399,7 @@ class Tails : public Player {
 	float flight_y;
 	bool wasFlying;
 public:
-	Tails(float x, float y,int h, int w) : Player(10,0.3, x, y, -15, 0.8,h,w), flying(false), moving(false), jumping(false), facingRight(true), wasFlying(false) {}
+	Tails(float x, float y,int h, int w,float a, float g) : Player(10,a, x, y, -15, g,h,w), flying(false), moving(false), jumping(false), facingRight(true), wasFlying(false) {}
 	void setSprite()
 	{
 		const Texture& currentTex = spriteManager.getTexture(moving, jumping, facingRight, flying);
@@ -518,7 +554,7 @@ bool moving;
 bool jumping;
 bool facingRight;
 	public:
-		Knuckles(float x, float y, int h, int w) : Player(12, 0.4f, x, y, -18, 1.2,h,w),invincible(false), moving(false), jumping(false), facingRight(true) {}
+		Knuckles(float x, float y, int h, int w,float a, float g) : Player(12, a, x, y, -15, g,h,w),invincible(false), moving(false), jumping(false), facingRight(true) {}
 		void setSprite()
 		{
 			const Texture& currentTex = spriteManager.getTexture(moving, jumping, facingRight, invincible);
@@ -607,14 +643,14 @@ bool facingRight;
 };
 class PlayerFactory {
 public:
-	Player* createPlayer(string type, float x, float y, int h, int w)
+	Player* createPlayer(string type, float x, float y, int h, int w,float a, float g)
 	{
 		if (type == "Sonic")
-			return new Sonic(x, y,h,w);
+			return new Sonic(x, y,h,w,a,g);
 		if (type == "Tails")
-			return new Tails(x, y, h ,w);
+			return new Tails(x, y, h ,w,a,g);
 		if (type == "Knuckles")
-			return new Knuckles(x, y, h,w);
+			return new Knuckles(x, y, h,w,a,g);
 		return nullptr;
 	}
 
@@ -630,11 +666,11 @@ class PlayerManager {
 	float cell_size;
 	int height, width;
 public:
-	PlayerManager(PlayerFactory& factory,char** lvl, int h, int w) :lives(3), currentPlayer(0), pitThreshold(800), gameover(false),lvl(lvl),cell_size(64),height(h),width(w)
+	PlayerManager(PlayerFactory& factory,char** lvl, int h, int w, float acc, float grav) :lives(3), currentPlayer(0), pitThreshold(800), gameover(false),lvl(lvl),cell_size(64),height(h),width(w)
 	{
-		players[0] = factory.createPlayer("Sonic", 100, 100,h,w);     //upcasting from child to parent
-		players[1] = factory.createPlayer("Tails", 50, 100,h,w);
-		players[2] = factory.createPlayer("Knuckles", 0, 100,h,w);
+		players[0] = factory.createPlayer("Sonic", 100, 100,h,w,acc,grav);     //upcasting from child to parent
+		players[1] = factory.createPlayer("Tails", 50, 100,h,w,acc,grav);
+		players[2] = factory.createPlayer("Knuckles", 0, 100,h,w,acc,grav);
 		players[0]->setLeader(true);
 	}
 	void updateFollowers()
@@ -712,59 +748,40 @@ public:
 		else
 		lives -= 1;
 	}
-	void checkPitRespawns() {
-		Player* leader = getLeader();
-
-		// Convert leader position to grid coordinates
-		int leader_col = leader->getXposition() / cell_size;
-		int leader_row = leader->getYPosition() / cell_size;
-
-		// Check if leader touched any pit cells (column 13 in this case)
-		if (leader_row >= 0 && leader_row < height && leader_col >= 0 && leader_col < width)
-		{
-			if (lvl[leader_row][leader_col] == 'p') 
-			{
-				removeLife();
-				if (!gameover) 
-				{
-					// Respawn all players
-					float respawnX = max(100.f, leader->getXposition() - 200.f);
-					for (int i = 0; i < 3; ++i) {
-						players[i]->respawn(respawnX, 100.f);
-						players[i]->setVelocityX(0);
-						players[i]->setVelocityY(0);
-						players[i]->setOnGround(true);
-					}
-				}
-				return;
-			}
-		}
-
-		// Followers (existing behavior)
-		for (int i = 0; i < 3; ++i) {
-			if (i != currentPlayer) {
-				int follower_row = players[i]->getYPosition() / cell_size;
-				int follower_col = players[i]->getXposition() / cell_size;
-
-				if (follower_row >= 0 && follower_row < height &&
-					follower_col >= 0 && follower_col < width &&
-					lvl[follower_row][follower_col] == 'p')
-				{
-					players[i]->respawn(leader->getXposition(), 100.f);
-				}
-			}
-		}
-	}
-
-	// Remove leaderPitcheck() entirely - redundant
-	void leaderPitcheck(Player* p)
-	{
-		if (p->getYPosition() > pitThreshold) //for incase the leader falls into the pit 
-		{
-			p->respawn(p->getXposition() + 64, 100); //goes back a cell
-
-		}
-	}
+void checkPits() 
+{
+    // Check all players (leader and followers)
+    for (int i = 0; i < 3; ++i) 
+    {
+        Player* player = players[i];
+        
+        // Only respawn if player has died (marked in collision)
+        if (player->isdead()) 
+        {
+            if (i == currentPlayer) 
+            {
+                // Leader fell - respawn everyone
+                removeLife();
+                if (!gameover) 
+                {
+                    float respawnX = max(100.f, player->getXposition() - 200.f);
+                    for (int j = 0; j < 3; ++j) 
+                    {
+                        players[j]->respawn(respawnX, 100.f);
+                        players[j]->setdead(false) ;
+                    }
+                }
+                break; // Only process leader fall once
+            }
+            else 
+            {
+                // Follower fell - respawn near leader
+                player->respawn(getLeader()->getXposition(), 100.f);
+                player->setdead(false);
+            }
+        }
+    }
+}
 	bool isGameOver()
 	{
 		return gameover;

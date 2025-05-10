@@ -11,8 +11,8 @@ protected:
 	Texture texture;
 	Sprite sprite;
 	int row, column;
-	//static SoundBuffer collectSound;
-	//static bool soundLoaded;
+	SoundBuffer collectSound;
+	bool soundLoaded;
 public:
 	Collectibles(int r, int c) :row(r), column(c) {}
 	void draw(float cell_size, RenderWindow& window, float offset)
@@ -22,7 +22,7 @@ public:
 	}
 	virtual void collect(char** lvl) = 0;
 	virtual ~Collectibles(){}
-	/*virtual void playSound() = 0;*/
+	virtual void playSound() = 0;
 
 	float getX(float cell_size) const 
 	{ 
@@ -36,11 +36,12 @@ public:
 };
 
 class Rings:public Collectibles{
-	//static SoundBuffer ringSound;
-	//static bool ringSoundLoaded;
+	 SoundBuffer ringSound;
+	 bool ringSoundLoaded;
 public:
 	Rings(int r,int c, char** lvl):Collectibles(r,c)
 	{
+		ringSoundLoaded = false;
 		texture.loadFromFile("Data/ring.png");
 		sprite.setTexture(texture);
 		sprite.setScale(1.5f, 1.5f);
@@ -51,16 +52,16 @@ public:
 	{
 		lvl[row][column] = ' ';
 	}
-	//virtual void playSound() 
-	//{
-	//	if (!ringSoundLoaded) 
-	//	{
-	//		ringSound.loadFromFile("Data/Ring.wav");
-	//		ringSoundLoaded = true;
-	//	}
-	//	Sound sound(ringSound);
-	//	sound.play();
-	//}
+	virtual void playSound() 
+	{
+		if (!ringSoundLoaded) 
+		{
+			ringSound.loadFromFile("Data/Ring.wav");
+			ringSoundLoaded = true;
+		}
+		Sound sound(ringSound);
+		sound.play();
+	}
 	~ Rings(){}
 	virtual string typeOfCollectible()
 	{
@@ -72,15 +73,15 @@ public:
 
 
 class ExtraLives: public Collectibles {
-	//static SoundBuffer lifeSound;
-	//static bool lifeSoundLoaded;
+	 SoundBuffer lifeSound;
+	bool lifeSoundLoaded;
 public:
 	ExtraLives(int r, int c, char** lvl) : Collectibles(r, c)
 	{
 		texture.loadFromFile("Data/life.png");
 		sprite.setTexture(texture);
 		sprite.setScale(3.0f, 3.0f);
-
+		lifeSoundLoaded = false;
 		lvl[r][c] = 'L';
 	}
 	
@@ -89,14 +90,14 @@ public:
 		lvl[row][column] = ' ';
 	}
 	~ ExtraLives(){}
-	/*virtual void playSound() {
+	virtual void playSound() {
 		if (!lifeSoundLoaded) {
 			lifeSound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Stage\LargeBooster.wav");
 			lifeSoundLoaded = true;
 		}
 		Sound sound(lifeSound);
 		sound.play();
-	}*/
+	}
 	virtual string typeOfCollectible()
 	{
 		return "extralife";
@@ -106,8 +107,8 @@ public:
 //bool ExtraLives::lifeSoundLoaded = false;
 
 class SpecialAbility: public Collectibles {
-	//static SoundBuffer abilitySound;
-	//static bool abilitySoundLoaded;
+SoundBuffer abilitySound;
+	 bool abilitySoundLoaded;
 public:
 	SpecialAbility(int r, int c, char** lvl) : Collectibles(r, c)
 	{
@@ -115,20 +116,21 @@ public:
 		sprite.setTexture(texture);
 		sprite.setScale(3.0f,3.0f);
 		lvl[r][c] = 'A';
+		abilitySoundLoaded = false;
 	}
 	
 	virtual void collect(char** lvl)
 	{
 		lvl[row][column] = ' ';
 	}
-	//virtual void playSound() {
-	//	if (!abilitySoundLoaded) {
-	//		abilitySound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Global\SpecialRing.wav");
-	//		abilitySoundLoaded = true;
-	//	}
-	//	Sound sound(abilitySound);
-	//	sound.play();
-	//}
+	virtual void playSound() {
+		if (!abilitySoundLoaded) {
+			abilitySound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Global\SpecialRing.wav");
+			abilitySoundLoaded = true;
+		}
+		Sound sound(abilitySound);
+		sound.play();
+	}
 	~SpecialAbility(){}
 	virtual string typeOfCollectible()
 	{

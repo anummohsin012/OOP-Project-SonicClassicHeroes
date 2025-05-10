@@ -34,6 +34,9 @@ protected:
     Timer *lvltimer;
     Text timerText;
     float lvlTime;
+    Texture dooropen;
+    Texture doorclosed;
+    Sprite door;
 
 public:
 	Levels(int h, int w, int rings, int e_l, float a, float g,float duration, Timer& timer)
@@ -88,6 +91,8 @@ public:
 
         lvltimer->start();
 
+        dooropen.loadFromFile("Data/dooropen.png");
+        doorclosed.loadFromFile("Data/doorclosed.png");
 	}
     void updateTimerDisplay() {
         float remaining = lvltimer->getRemainingTime();
@@ -320,7 +325,7 @@ public:
 
 class Level1 :public Levels {
 public:
-    Level1(Timer& timer):Levels(14,200,5,1,0.1,1,120.0f,timer)
+    Level1(Timer& timer):Levels(14,200,5,1,0.8,1,120.0f,timer)
     { 
         setObstaclesandCollectibles();
     }

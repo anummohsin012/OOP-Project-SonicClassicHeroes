@@ -203,6 +203,9 @@ public:
 		velocity_y = 0;
 		onground = true;
 	}
+	bool getonground() const {
+		return onground;
+	}
 	virtual bool isInvincible() = 0;
 };
 
@@ -665,8 +668,10 @@ class PlayerManager {
 	char** lvl;
 	float cell_size;
 	int height, width;
+	float damagecooldown;
+	Clock damageClock;
 public:
-	PlayerManager(PlayerFactory& factory,char** lvl, int h, int w, float acc, float grav) :lives(3), currentPlayer(0), pitThreshold(800), gameover(false),lvl(lvl),cell_size(64),height(h),width(w)
+	PlayerManager(PlayerFactory& factory,char** lvl, int h, int w, float acc, float grav) :lives(3), currentPlayer(0), pitThreshold(800), gameover(false),lvl(lvl),cell_size(64),height(h),width(w),damagecooldown(1.0f)
 	{
 		players[0] = factory.createPlayer("Sonic", 100, 100,h,w,acc,grav);     //upcasting from child to parent
 		players[1] = factory.createPlayer("Tails", 50, 100,h,w,acc,grav);
@@ -724,6 +729,12 @@ public:
 	{ 
 		return players[i]; 
 	}
+	bool canTakeDamage() {
+		return damageClock.getElapsedTime().asSeconds() > damagecooldown;
+	}
+	void resetDamageTimer() {
+		damageClock.restart();
+	}
 	void changePlayer()
 	{
 		players[currentPlayer]->setLeader(false);
@@ -740,13 +751,18 @@ public:
 	}
 	void removeLife()
 	{
+		
 		if (lives<=0)
 		{
 			gameover = true;
 			return;
 		}
-		else
-		lives -= 1;
+		else if (canTakeDamage()) {
+			lives--;
+			resetDamageTimer();
+			cout << "Life lost. Lives left: " << lives << endl;
+		}
+		
 	}
 void checkPits() 
 {

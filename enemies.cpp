@@ -1,381 +1,395 @@
-//#include <SFML/Graphics.hpp>
-//#include <cstdlib>
-//#include <ctime>
-//
-//using namespace sf;
-//
-//
-//class Enemy {
-//protected:
-//    Sprite sprite;
-//    Texture tex;
-//    int hp;
-//    float speedX;
-//    float speedY;
-//    int wid;
-//    int hei;
-//    bool isact;
-//public:
-//    Enemy(int hp, Texture& texture, float x, float y, float speedX, float speedY, int gridW, int gridH) : hp(hp), tex(texture), speedX(speedX), speedY(speedY), wid(gridW), hei(gridH), isact(true) {
-//        sprite.setTextureRect(IntRect(0, 0, 40, 40));
-//        sprite.setTexture(texture);
-//        sprite.setPosition(x, y);
-//    }
-//    virtual void update(float deltaTime, float playerX, float playerY) = 0;
-//    virtual void draw(RenderWindow& window) = 0;
-//    virtual void uniqueBehavior(float deltaTime) = 0;
-//
-//    Sprite& getSprite() {
-//        return sprite;
-//    }
-//
-//    void takeDamage(int damage) {
-//        hp -= damage;
-//        if (hp <= 0) {
-//            isact = false;
-//        }
-//    }
-//
-//    bool isDead() const {
-//        return hp <= 0;
-//    }
-//    bool getActiveStatus() const {
-//        return isact;
-//    }
-//
-//    void checkBounds() {
-//        float x = sprite.getPosition().x;
-//        float y = sprite.getPosition().y;
-//        float w = (float)tex.getSize().x;
-//        float h = (float)tex.getSize().y;
-//        
-//        if (y <= 0 || y + h >= hei) speedY *= -1;
-//    }
-//};
-//
-//
-//class Crawler : public Enemy {
-//public:
-//    Crawler(int hp, Texture& texture, float x, float y, float speedX, int gridW, int gridH)
-//        : Enemy(hp, texture, x, y, speedX,speedY, gridW, gridH) {
-//    }
-//
-//    void update(float deltaTime, float playerX, float playerY) override {
-//        sprite.move(speedX * deltaTime, 0);
-//        checkBounds();
-//    }
-//
-//    void draw(RenderWindow& window) override {
-//        sprite.setTextureRect(IntRect(0, 0, 40, 40));
-//        window.draw(sprite);
-//    }
-//    void uniqueBehavior(float deltaTime) override {}
-//
-//};
-//
-//class Flyer : public Enemy {
-//public:
-//    Flyer(int hp, Texture& texture, float x, float y, float speedX, float speedY, int gridW, int gridH)
-//        : Enemy(hp, texture, x, y, speedX, speedY, gridW, gridH) {
-//    }
-//
-//    void update(float deltaTime, float playerX, float playerY) override {
-//        sprite.move(speedX * deltaTime, speedY * deltaTime);
-//        checkBounds();
-//    }
-//
-//    void draw(RenderWindow& window) override {
-//        sprite.setTextureRect(IntRect(0, 0, 40, 40));
-//        window.draw(sprite);
-//    }
-//
-//    void uniqueBehavior(float deltaTime) override {}
-//
-//};
-//
-//class BatBrain : public Flyer {
-//public:
-//    BatBrain(Texture& texture, float x, float y, int gridW, int gridH)
-//        : Flyer(3, texture, x, y, 80.f, 80.f, gridW, gridH) {
-//    }
-//    void update(float dt, float playerX, float playerY) override {
-//        Vector2f pos = sprite.getPosition();
-//        if (pos.x < playerX) pos.x += 30 * dt;
-//        else pos.x -= 30 * dt;
-//        if (pos.y < playerY) pos.y += 15 * dt;
-//        else pos.y -= 15 * dt;
-//        sprite.setPosition(pos);
-//        checkBounds();
-//    }
-//    void draw(RenderWindow& window) override {
-//        sprite.setTextureRect(IntRect(80, 0, 40, 40)); 
-//        window.draw(sprite);
-//    }
-//    void uniqueBehavior(float) override {
-//       
-//    }
-//
-//};
-//
-//class BeeBot : public Enemy {
-//private:
-//    float zigzagTimer = 0.f;
-//    float zigzagInterval = 0.5f;  // Switch X direction every 0.5 seconds
-//    int zigzagDirection = 1;
-//
-//    float shootCooldown = 5.f;   // Shoots every 5 seconds
-//    float timeSinceLastShot = 0.f;
-//
-//public:
-//    BeeBot(Texture& texture, float x, float y, int gridW, int gridH)
-//        : Enemy(5, texture, x, y, 60.f, 40.f, gridW, gridH) {
-//    }
-//
-//    void update(float dt, float playerX, float playerY) override {
-//        // Zigzag movement logic
-//        zigzagTimer += dt;
-//        if (zigzagTimer >= zigzagInterval) {
-//            zigzagDirection *= -1;
-//            zigzagTimer = 0.f;
-//        }
-//
-//        sprite.move(speedX * zigzagDirection * dt, speedY * dt);
-//
-//        // Shooting logic
-//        timeSinceLastShot += dt;
-//        if (timeSinceLastShot >= shootCooldown) {
-//            shoot();
-//            timeSinceLastShot = 0.f;
-//        }
-//
-//        checkBounds();
-//    }
-//
-//    void draw(RenderWindow& window) override {
-//        sprite.setTextureRect(IntRect(0, 0, 40, 40));  // Adjust as needed
-//        window.draw(sprite);
-//    }
-//
-//    void uniqueBehavior(float dt) override {
-//        
-//    }
-//
-//    void shoot() {
-//
-//    }
-//};
-//
-//
-//
-//class Motobug : public Crawler {
-//public:
-//    Motobug(Texture& texture, float x, float y, int gridW, int gridH) : Crawler(2, texture, x, y, 50.f, gridW, gridH) {}
-//
-//
-//    void update(float deltaTime, float playerX, float playerY) override {
-//        float myX = sprite.getPosition().x;
-//        float playerDir = (playerX > myX) ? 1.f : -1.f;
-//
-//        sprite.move(playerDir * speedX * deltaTime, 0.f);  // Only move in X
-//        checkBounds();
-//    }
-//
-//    void draw(RenderWindow& window) override {
-//        sprite.setTextureRect(IntRect(0, 0, 40, 40)); // Optional visual slice
-//        window.draw(sprite);
-//    }
-//
-//    void uniqueBehavior(float deltaTime) override {
-//        // Not used for Motobug
-//    }
-//
-//};
-//
-//class CrabMeat : public Crawler {
-//private:
-//    float shootTimer = 0.f;
-//    float shootCooldown = 5.f;  // Shoot every 5 seconds
-//
-//    float projX = -100;   // Offscreen by default
-//    float projY = -100;
-//    bool projActive = false;
-//
-//public:
-//    CrabMeat(Texture& texture, float x, float y, int gridW, int gridH)
-//        : Crawler(4, texture, x, y, 60.f,  gridW, gridH) {
-//    }
-//
-//    void update(float deltaTime, float playerX, float playerY) override {
-//        sprite.move(speedX * deltaTime, 0.f);
-//        checkBounds();
-//
-//        // Shoot timer
-//        shootTimer += deltaTime;
-//        if (shootTimer >= shootCooldown) {
-//            shootProjectile();
-//            shootTimer = 0.f;
-//        }
-//
-//        // Update projectile if active
-//        if (projActive) {
-//            projX += 200 * deltaTime;
-//            if (projX > wid) {
-//                projActive = false;
-//            }
-//        }
-//    }
-//
-//    void draw(RenderWindow& window) override {
-//        sprite.setTextureRect(IntRect(0, 0, 40, 40));
-//        window.draw(sprite);
-//
-//        // Draw projectile if active
-//        if (projActive) {
-//            RectangleShape bullet(Vector2f(10, 4));
-//            bullet.setFillColor(Color::Red);
-//            bullet.setPosition(projX, projY);
-//            window.draw(bullet);
-//        }
-//    }
-//
-//    void uniqueBehavior(float deltaTime) override {}
-//
-//    void shootProjectile() {
-//        projX = sprite.getPosition().x + 40;
-//        projY = sprite.getPosition().y + 15;
-//        projActive = true;
-//    }
-//};
-//
-//class EggStinger : public Enemy {
-//private:
-//    float diveTimer = 0.f;
-//    float diveInterval = 10.f;
-//    bool diving = false;
-//
-//public:
-//    EggStinger(Texture& texture, float x, float y, int gridW, int gridH)
-//        : Enemy(15, texture, x, y, 60.f, 0.f, gridW, gridH) {
-//    }
-//
-//    void update(float dt, float playerX, float playerY) override {
-//        diveTimer += dt;
-//
-//        if (!diving)
-//            sprite.move(speedX * dt, 0.f);
-//
-//        if (diveTimer >= diveInterval) {
-//            sprite.setPosition(playerX, sprite.getPosition().y); // align X
-//            sprite.move(0.f, 80.f); // dive down (simulate destroying ground)
-//            diving = true;
-//            diveTimer = 0.f;
-//        }
-//        else if (diving) {
-//            sprite.move(0.f, -80.f * dt); // return up slowly
-//            if (sprite.getPosition().y <= 100.f) { // assume original Y
-//                sprite.setPosition(sprite.getPosition().x, 100.f);
-//                diving = false;
-//            }
-//        }
-//
-//        checkBounds();
-//    }
-//
-//    void draw(RenderWindow& window) override {
-//        sprite.setTextureRect(IntRect(0, 0, 40, 40));
-//        window.draw(sprite);
-//    }
-//
-//    void uniqueBehavior(float dt) override {}
-//};
-//
-//
-//
-//class EnemyFactory {
-//public:
-//    static Enemy* createEnemy(const std::string& type, Texture& texture, float x, float y, int gridW, int gridH) {
-//        if (type == "Crawler") {
-//            return new Crawler(2, texture, x, y, 60.f, gridW, gridH);
-//        }
-//        else if (type == "Flyer") {
-//            return new Flyer(3, texture, x, y, 80.f, 80.f, gridW, gridH);
-//        }
-//        else if (type == "BatBrain") {
-//            return new BatBrain(texture, x, y, gridW, gridH);
-//        }
-//        else if (type == "BeeBot") {
-//            return new BeeBot(texture, x, y, gridW, gridH);
-//        }
-//        else if (type == "Motobug") {
-//            return new Motobug(texture, x, y, gridW, gridH);
-//        }
-//        else if (type == "CrabMeat") {
-//            return new CrabMeat(texture, x, y, gridW, gridH);
-//        }
-//
-//        return nullptr; // Default fallback
-//    }
-//};
-//
-//
-//int main() {
-//    sf::RenderWindow window(sf::VideoMode(800, 600), "Sonic Classic Heroes");
-//
-//    // Load textures
-//    sf::Texture motobugTexture, beeBotTexture, batBrainTexture, eggStingerTexture;
-//    if ((!motobugTexture.loadFromFile("Data/motobug.png")) ||
-//        (!beeBotTexture.loadFromFile("Data/beebot.png")) ||
-//        (!batBrainTexture.loadFromFile("Data/BatBrain.png"))){}
-//    float playerX = 400.f;  // placeholder
-//    float playerY = 300.f;  // placeholder
-//    Texture bossTex;
-//    bossTex.loadFromFile("Data/boss.png");
-//    Enemy* boss = new EggStinger(bossTex, 300, 100, 800, 600);
-//
-//
-//    // Create enemies
-//    Enemy* motobug = EnemyFactory::createEnemy("Motobug", motobugTexture, playerX, playerY,800,600);
-//    Enemy* beebot = EnemyFactory::createEnemy("BeeBot", beeBotTexture, playerX, playerY, 800, 600);
-//   
-//    Enemy* batbrain = EnemyFactory::createEnemy("BatBrain", batBrainTexture, playerX, playerY, 800, 600);
-//   
-//
-//    sf::Clock clock;
-//
-//    while (window.isOpen()) {
-//        sf::Time deltaTime = clock.restart();
-//        sf::Event event;
-//        while (window.pollEvent(event)) {
-//            if (event.type == sf::Event::Closed)
-//                window.close();
-//        }
-//        playerX += 50 * deltaTime.asSeconds();
-//        playerY -= 30 * deltaTime.asSeconds();playerX -= 10;
-//        
-//        playerX-=20* deltaTime.asSeconds();
-//       
-//
-//        // Update
-//        motobug->update(deltaTime.asSeconds(), playerX, playerY);
-//        beebot->update(deltaTime.asSeconds(), playerX, playerY);
-//        batbrain->update(deltaTime.asSeconds(), playerX, playerY);
-//        boss->update(deltaTime.asSeconds(), playerX, playerY);
-//
-//       
-//        // Render
-//        window.clear();
-//        motobug->draw(window);
-//        beebot->draw(window);
-//        batbrain->draw(window);
-//        boss->draw(window);
-//        
-//        window.display();
-//    }
-//
-//    delete motobug;
-//    delete beebot;
-//    delete batbrain;
-//   
-//
-//    return 0;
-//}
+#pragma once
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+
+#include "Player.cpp"
+using namespace sf;
+class Enemy {
+protected:
+    float x, y;
+    float speed;
+    int hp;
+    bool alive;
+    Texture texture;
+    Sprite sprite;
+    int width, height;
+   float hitboxl, hitboxt,hitboxr, hitboxb;
+   
+
+
+public:
+    Enemy(float x, float y, float spd, int health, int w, int h ,float hitboxL, float hitboxT, float hitboxR, float hitboxB)
+        : x(x), y(y), speed(spd), hp(health), alive(true), width(w), height(h), hitboxl(hitboxL), hitboxt(hitboxT), hitboxr(hitboxR), hitboxb(hitboxB) {
+       
+    }
+
+    virtual void updateposi(const Player* player, char** lvl, float cell_size) = 0;
+    virtual void draw(sf::RenderWindow& window) {
+        if (alive) {
+            sprite.setPosition(x - 20, y - 20);
+            window.draw(sprite);
+
+            RectangleShape hitboxShape;
+            hitboxShape.setPosition(getLeft(), getTop());
+            hitboxShape.setSize(Vector2f(hitboxr - hitboxl, hitboxb - hitboxt));
+            hitboxShape.setFillColor(Color(255, 0, 0, 100)); // Semi-transparent red
+            window.draw(hitboxShape);
+        }
+    }
+    void takeDamage() {
+        hp -= 1;
+        if (hp <= 0) alive = false;
+    }
+    bool isAlive() const { 
+        return alive;
+    }
+    float getLeft() const { 
+        return x + hitboxl;
+    }
+    float getRight() const {
+        return x + hitboxr; 
+    }
+    float getTop() const {
+        return y + hitboxt; 
+    }
+    float getBottom() const { 
+        return y + hitboxb; 
+    }
+    static void checkcollision(PlayerManager& manager, Enemy* enemies[], int enemyCount) {
+        float px = manager.getLeader()->getXposition();
+        float py = manager.getLeader()->getYPosition();
+        float pw = 40.f * 2.5f;
+        float ph = 40.f * 2.5f;
+
+        static Music collisionmusic;
+        collisionmusic.openFromFile("Data/collision.ogg");
+        collisionmusic.setVolume(60);
+        
+
+        for (int i = 0; i < enemyCount; i++) {
+            if (enemies[i] && enemies[i]->isAlive()) {
+                float ex1 = enemies[i]->getLeft();
+                float ex2 = enemies[i]->getRight();
+                float ey1 = enemies[i]->getTop();
+                float ey2 = enemies[i]->getBottom();
+
+                if (px < ex2 && px + pw > ex1 && py < ey2 && py + ph > ey1) {
+                    enemies[i]->takeDamage();
+                    collisionmusic.play();
+                    if (!manager.getLeader()->isInvincible() &&  manager.getLeader()->getonground()) {
+                        manager.removeLife();
+                        
+
+                    }
+                }
+            }
+        }
+ 
+        
+    }
+    virtual ~Enemy() {}
+};
+
+
+class Projectile {
+private:
+    float x, y;
+    float speedX, speedY;
+    bool active;
+    Texture texture;
+    Sprite sprite;
+
+public:
+    Projectile(float startX, float startY, float dirX, float dirY)
+        : x(startX), y(startY), speedX(dirX), speedY(dirY), active(true) {
+        texture.loadFromFile("Data/life.png");
+        sprite.setTexture(texture);
+        sprite.setScale(1.0f, 1.0f);
+        sprite.setPosition(x, y);
+    }
+    void update() {
+        x += speedX;
+        y += speedY;
+        sprite.setPosition(x, y);
+    }
+    void draw(sf::RenderWindow& window) {
+        if (active)
+            window.draw(sprite);
+    }
+    bool isActive() const { return active; }
+    float getX() const { return x; }
+    float getY() const { return y; }
+    float getWidth() const { return 20.f; } 
+    float getHeight() const { return 20.f; }
+};
+
+
+
+class Crawler : public Enemy {
+public:
+    Crawler(float x, float y, float spd, int hp, int w, int h) : Enemy(x, y, spd, hp, w, h,-20,-20,60,120) {}
+    virtual void movement(char** lvl, float cell_size) = 0;
+};
+
+class Motobug : public Crawler {
+private:
+    bool faceright;
+public:
+    Motobug(float x, float y, int w, int h) : Crawler(x, y, 1.0f, 2, w, h), faceright(false) {
+        texture.loadFromFile("Data/motobugright.png");
+        sprite.setTexture(texture);
+        sprite.setScale(1.0f, 1.0f);
+    }
+    void movement(char** lvl, float cell_size) override {
+        x += speed;
+        if (faceright == true) {
+            texture.loadFromFile("Data/motobug.png");
+            sprite.setTexture(texture);
+            sprite.setScale(2.0f, 2.0f);
+        }
+        else {
+            texture.loadFromFile("Data/motobugright.png");
+            sprite.setTexture(texture);
+            sprite.setScale(2.0f, 2.0f);
+        }
+        sprite.setPosition(x, y);
+    }
+    void updateposi(const Player* player, char** lvl, float cell_size) override {
+        if (player->getXposition() < x && speed > 0) { speed = -speed; 
+        faceright = false;
+        }
+        else if (player->getXposition() > x && speed < 0) { speed = -speed; 
+        faceright = true;
+        }
+        movement(lvl, cell_size);
+    }
+};
+
+class CrabMeat : public Crawler {
+    
+public:
+    CrabMeat(float x, float y, int w, int h) : Crawler(x, y, 1.0f, 4, w, h){
+        texture.loadFromFile("Data/crabmeat2.png");
+        sprite.setTexture(texture);
+        sprite.setScale(1.0f, 1.0f);
+    }
+    void movement(char** lvl, float cell_size) override {
+        x += speed;
+        if (x <= 0 || x >= width * cell_size) speed *= -1;
+    }
+    void updateposi(const Player* player, char** lvl, float cell_size) override {
+        movement(lvl, cell_size);
+      
+    }
+    void draw(sf::RenderWindow& window) override {
+        Enemy::draw(window);
+        
+    }
+ 
+    
+
+};
+
+
+
+class Flyer : public Enemy {
+public:
+    Flyer(float x, float y, float spd, int hp, int w, int h) : Enemy(x, y, spd, hp, w, h,-20,-20,100,60) {}
+    virtual void movement() = 0;
+};
+
+class BatBrain : public Flyer {
+private:
+    bool faceright;
+public:
+    BatBrain(float x, float y, int w, int h) : Flyer(x, y, 0.5f, 3, w, h) {
+        texture.loadFromFile("Data/batbrain2.png");
+        sprite.setTexture(texture);
+        sprite.setScale(1.0f, 1.0f);
+    }
+    void movement() override {}
+    void updateposi(const Player* player, char** lvl, float cell_size) override {
+        if (player->getXposition() < x) {
+            x -= speed;
+            texture.loadFromFile("Data/batbrain2.png");
+            sprite.setTexture(texture);
+            sprite.setScale(1.0f, 1.0f);
+        }
+        else {
+            x += speed;
+            texture.loadFromFile("Data/batbrain3.png");
+            sprite.setTexture(texture);
+            sprite.setScale(1.0f, 1.0f);
+
+        }
+
+        if (player->getYPosition() < y) {
+            y -= speed;
+        }
+        else {
+            y += speed;
+        }
+    }
+};
+
+class BeeBot : public Flyer {
+private:
+    float angle;
+    float startY;
+    float leftBound, rightBound;
+
+public:
+    BeeBot(float x, float y, int w, int h)
+        : Flyer(x, y, 1.0f, 5, w, h), angle(0.0f), startY(y) {
+        texture.loadFromFile("Data/beebot.png");
+        sprite.setTexture(texture);
+        sprite.setScale(1.0f, 1.0f);
+
+        leftBound = x - 150;  
+        
+    }
+
+    void movement() override {
+        x += speed;
+
+        if (x < leftBound )
+            speed = -speed; 
+
+        y = startY + sin(angle) * 40; 
+        angle += 0.05f;
+    }
+    void updateposi(const Player* player, char** lvl, float cell_size) override {
+        x += speed;
+        movement();
+    }
+    void draw(RenderWindow& window) override {
+        Enemy::draw(window);
+        
+    }
+};
+class EnemyFactory {
+public:
+    static Enemy* createEnemy(int type, float x, float y, int width, int height) {
+        if (type == 0)
+            return new Motobug(x, y, width, height);
+        else if (type == 1)
+            return new CrabMeat(x, y, width, height);
+        else if (type == 2)
+            return new BatBrain(x, y, width, height);
+        else if (type == 3)
+            return new BeeBot(x, y, width, height);
+        else
+            return nullptr;
+    }
+};
+
+int main() {
+    const int height = 14, width = 200, cell_size = 64;
+
+    char** lvl = new char* [height];
+    for (int i = 0; i < height; ++i) {
+        lvl[i] = new char[width];
+        for (int j = 0; j < width; ++j)
+            lvl[i][j] = ' ';
+    }
+    for (int j = 0; j < width; ++j)
+        lvl[13][j] = 'w'; 
+
+    RenderWindow window(VideoMode(1280, 720), "Sonic Classic Heroes Test");
+    window.setFramerateLimit(60);
+
+    PlayerFactory factory;
+    PlayerManager manager(factory, lvl, height, width,10,1);
+
+    // Setup enemies
+    Enemy* enemies[4];
+    enemies[0] = EnemyFactory::createEnemy(0, 500, 700, width, height);  // Motobug
+    enemies[1] = EnemyFactory::createEnemy(1, 900, 700, width, height);  // CrabMeat
+    enemies[2] = EnemyFactory::createEnemy(2, 1300, 500, width, height); // BatBrain
+    enemies[3] = EnemyFactory::createEnemy(3, 700, 200, width, height); // BeeBot
+
+    Event ev;
+
+    while (window.isOpen()) {
+        while (window.pollEvent(ev)) {
+            if (ev.type == Event::Closed)
+                window.close();
+            if (ev.type == Event::KeyPressed) {
+                if (ev.key.code == Keyboard::Tab)
+                    manager.changePlayer(); // Switch character
+            }
+        }
+
+        // Input for leader only
+        if (Keyboard::isKeyPressed(Keyboard::Right))
+            manager.getLeader()->moveRight(lvl, cell_size);
+        else if (Keyboard::isKeyPressed(Keyboard::Left))
+            manager.getLeader()->moveLeft(lvl, cell_size);
+        else
+            manager.getLeader()->setVelocityX(0); // Stop if no key pressed
+
+        if (Keyboard::isKeyPressed(Keyboard::Space))
+            manager.getLeader()->jump();
+
+        if (Keyboard::isKeyPressed(Keyboard::LShift))
+            manager.getLeader()->useSpecialAbility();
+
+        // Update physics and ground collision
+        for (int i = 0; i < 3; ++i) {
+            manager.getPlayer(i)->updatePhysics();
+            if (manager.getPlayer(i)->getYPosition() >= 600) {
+                manager.getPlayer(i)->setYPosition(600);
+                manager.getPlayer(i)->setVelocityY(0);
+                manager.getPlayer(i)->setOnGround(true);
+            }
+        }
+
+        // Update enemy AI
+        for (int i = 0; i < 4; ++i)
+            if (enemies[i] && enemies[i]->isAlive())
+                enemies[i]->updateposi(manager.getLeader(), lvl, (float)cell_size);
+
+        // Update followers logic
+        manager.updateFollowers();
+        manager.checkPits();
+
+        Enemy::checkcollision(manager, enemies, 4);
+
+
+        // Rendering
+        window.clear(Color::Black);
+
+        for (int i = 0; i < 3; ++i) {
+            const Sprite& sprite = manager.getPlayer(i)->getSprite();
+            Sprite s = sprite;
+            s.setPosition(manager.getPlayer(i)->getXposition(), manager.getPlayer(i)->getYPosition());
+            window.draw(s);
+        }
+
+        for (int i = 0; i < 4; ++i)
+            if (enemies[i] && enemies[i]->isAlive())
+                enemies[i]->draw(window);
+
+
+        CircleShape dummyCircle(15);
+        dummyCircle.setFillColor(Color::Cyan);
+        dummyCircle.setPosition(manager.getLeader()->getXposition(), manager.getLeader()->getYPosition());
+        window.draw(dummyCircle);
+
+        window.display();
+    }
+
+    // Cleanup
+    for (int i = 0; i < 4; ++i)
+        delete enemies[i];
+    for (int i = 0; i < height; ++i)
+        delete[] lvl[i];
+    delete[] lvl;
+
+    return 0;
+}
+
+
+
+
+

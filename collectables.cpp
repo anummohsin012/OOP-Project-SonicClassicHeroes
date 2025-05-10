@@ -60,6 +60,7 @@ public:
 			ringSoundLoaded = true;
 		}
 		Sound sound(ringSound);
+		sound.setVolume(50.f);
 		sound.play();
 	}
 	~ Rings(){}

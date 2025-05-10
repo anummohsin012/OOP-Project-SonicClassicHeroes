@@ -282,7 +282,7 @@ public:
 			{
 				facingRight = true;
 				moving = true;
-				velocity_x = speed;
+				velocity_x = speed*acceleration;
 				setSprite();
 			}
 		}
@@ -297,7 +297,7 @@ public:
 			{
 				facingRight = false;  
 				moving = true;
-				velocity_x = -speed; 
+				velocity_x = -speed*acceleration; 
 				setSprite();
 			}
 		}
@@ -420,7 +420,7 @@ public:
 			{
 				facingRight = true;
 				moving = true;
-				velocity_x = speed;
+				velocity_x = speed*acceleration;
 				setSprite();
 			}
 		}
@@ -435,7 +435,7 @@ public:
 			{
 				facingRight = false;
 				moving = true;
-				velocity_x = -speed;
+				velocity_x = -speed*acceleration;
 				setSprite();
 			}
 		}
@@ -575,7 +575,7 @@ bool facingRight;
 				{
 					facingRight = true;
 					moving = true;
-					velocity_x = speed;
+					velocity_x = speed*acceleration;
 					setSprite();
 				}
 			}
@@ -590,7 +590,7 @@ bool facingRight;
 				{
 					facingRight = false;
 					moving = true;
-					velocity_x = -speed;
+					velocity_x = -speed*acceleration;
 					setSprite();
 				}
 			}

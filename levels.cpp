@@ -19,6 +19,7 @@ protected:
 	Texture lvlTex1;
     Texture lvlTex2;
     Texture lvlTex3;
+    Texture bossleveltex;
 	Sprite lvlSprite;
 	Music lvlMus;
 	int rings;
@@ -79,6 +80,12 @@ public:
             return;
         }
         lvlTex3.setRepeated(true);
+        if (!bossleveltex.loadFromFile("Data/bg1.png"))
+        {
+            return;
+        }
+        
+
 
         wall.loadFromFile("Data/brick1.png");
         wallSprite.setTexture(wall);
@@ -767,11 +774,100 @@ public:
     }
 };
 class BossLevel :public Levels {
+    public:
+    BossLevel(Timer& timer) :Levels(14, 32, 25, 1, 1.2, 1.5, 120.0f, timer)
+    {
+        levelIntroText.setString("BOSS LEVEL");
+
+        setObstaclesandCollectibles();
+        lvlSprite.setTexture(bossleveltex);
+        lvlSprite.setScale(1.0f, 1.0f);
+        lvlSprite.setTextureRect(IntRect(0, 0, width * 64, height * 64));
+    }
+    virtual void setObstaclesandCollectibles() override
+    {
+        //basic level layout
+        for (int i = 0;i < width;i++) //originally setting wall on the whole ground
+        {
+            lvl[12][i] = 'w';
+            lvl[13][i] = 'w';
+        }
+        lvl[0][0] = 'w';
+        lvl[1][0] = 'w';
+
+        for (int i = 3;i < width;i++) //originally setting wall on the whole ground
+        {
+            lvl[0][i] = 'w';
+            lvl[1][i] = 'w';
+        }
+
+        for (int i = 0;i < 64;i++) //originally setting wall on the whole ground
+        {
+            lvl[12][i] = 'w';
+            lvl[13][i] = 'w';
+        }
+
+        factory.spawn(new Rings(12, 9, lvl));
+        rings++;
+        for (int i = 10;i < 14;i++)
+        {
+            lvl[8][i] = 'w';
+        }
+        for (int i = 14;i < 22;i++)
+        {
+            lvl[12][i] = 'w';
+        }
+        for (int i = 22;i < 42;i % 2 == 0 ? i += 1 : i += 2)
+        {
+            lvl[2][i] = 'w';
+        }
+        for (int i = 44;i < 54;i += 1)
+        {
+            lvl[5][i] = 'w';
+        }
+        for (int i = 54;i < 64;i += 2)
+        {
+            lvl[5][i] = 'w';
+        }
+        factory.spawn(new SpecialAbility(11, 22, lvl));
+
+        lvl[11][24] = 'v';
+        lvl[11][30] = 'v';
+        lvl[11][38] = 'v';
+
+        addEnemy(4, 4 * cell_size, 3 * cell_size);
+        for (int i = 48;i < 50;i += 1)
+        {
+            lvl[12][i] = 'p';
+            lvl[13][i] = 'p';
+        }
+
+
+
+    }
+    virtual void trigger(RenderWindow& window, float offset = 0) override
+    {
+        door.setScale(2.5f, 2.5f);
+        if (manager.getLeader()->getXposition() >= 60 * 64.f && manager.getLeader()->getXposition() <= 63 * 64.f && manager.getLeader()->getYPosition() <= 12 * 64 && manager.getLeader()->getYPosition() >= 10 * 64 && ringscollected == rings)
+        {
+            door.setPosition(62* 64 - offset, 8.7 * 64);
+            door.setTexture(dooropen);
+            window.draw(door);
+            sleep(seconds(2));
+            lvlFinished = true;
+        }
+        else
+        {
+            door.setPosition(62 * 64 - offset, 8.7 * 64);
+            door.setTexture(doorclosed);
+            window.draw(door);
+        }
+    }
 
 };
 
 class LevelManager {
-    const int MAXLEVELS = 3; //4
+    const int MAXLEVELS = 4;
     Levels** levels = new Levels * [MAXLEVELS];
     int currentLevel;
     Timer timer;
@@ -779,10 +875,10 @@ class LevelManager {
 
     void loadLevels() 
     {
-        levels[0] = new Level1(timer);
+        levels[0] = new BossLevel(timer);
         levels[1] = new Level2(timer); 
         levels[2] = new Level3(timer); 
-        //levels[3] = new BossLevel(timer);
+        levels[3] = new BossLevel(timer);
     }
 public:
     LevelManager() : currentLevel(0) ,timer(120.f)

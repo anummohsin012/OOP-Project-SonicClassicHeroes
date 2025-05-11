@@ -5,11 +5,11 @@
 
 using namespace sf;
 using namespace std;
-
+// displays player scores and names etc
 class ScoreBoard {
     RenderWindow& window;
-    int scores[4]{ 0 };
-    int total_score;
+    int scores[4]{ 0 }; // to store scores for all the levels 
+    int total_score; //score of all the levels combines
     string name;
     Texture tex;
     Sprite spr;
@@ -27,8 +27,7 @@ public:
             cout << "Failed to load font\n";
         }
 
-        for (int i = 0; i < 6; i++) 
-        {
+        for (int i = 0; i < 6; i++)  {
             texts[i].setFont(font);
             texts[i].setCharacterSize(70);
             texts[i].setFillColor(Color::Black);
@@ -38,8 +37,7 @@ public:
     void setname(string name) { this->name = name; 
     updateTexts();
     }
-    void setscores(int sc[])
-    {
+    void setscores(int sc[]) {
         for (int i = 0;i < 4;i++)
         {
             scores[i] = sc[i];
@@ -54,37 +52,36 @@ public:
         texts[3].setString("Level 3 Score: " + to_string(scores[2]));
         texts[4].setString("Level 4 Score: " + to_string(scores[3]));
         texts[5].setString("Total Score: " + to_string(total_score));
-
-        for (int i = 0; i < 6; i++) 
-        {
+        for (int i = 0; i < 6; i++) {
             texts[i].setPosition(50, 50 + i * 70); // Adjust X, Y positions
         }
     }
-    void display()
-    { 
+    void display() { 
         window.draw(spr);
         for (int i = 0; i < 6; i++) {
             window.draw(texts[i]);
         }
     }
-    int getTotalScore() const { return total_score; }
+    int getTotalScore() const {
+        return total_score; 
+    }
 };
-
+// a class that contrils the who game at the end by compsing and aggregating differtn classes 
 class Game {
 private:
     RenderWindow window;
     Menu menu;
-    LevelManager levelManager;
-    int gameState; //0 is menu 1 is game 3 is scoreboard
-    string playerName;
-    ScoreBoard scoreBoard;
-    Leaderboard leaderboard;
+    LevelManager levelManager; // composes level manager class to controll lvels through pointers 
+    int gameState; //0 is menu 1 is game 2 is scoreboard and 3 is leaderboard
+    string playerName; 
+    ScoreBoard scoreBoard; //composes scoreboard  to display scores wara
+    Leaderboard leaderboard; // composes leaderboard class to track high scores wara
 
 public:
     Game() : window(VideoMode(1200, 896), "Sonic Classic Heroes"),menu(1200, 896),levelManager(), gameState(0), playerName("Player"),scoreBoard(window)
     {}
 
-    void run() {
+    void run() { // handles all the runn that is called in the main loop
         while (window.isOpen()) {
             handleEvents();
             update();
@@ -93,6 +90,7 @@ public:
     }
 
 private:
+    // handling all the things of classes that it composed 
     void handleEvents() {
         Event event;
         while (window.pollEvent(event)) {
@@ -147,7 +145,7 @@ private:
             }
         }
     }
-
+    //updates the states of game 
     void update() {
         window.setFramerateLimit(60);
         if (gameState == 1) {
@@ -175,7 +173,7 @@ private:
             }
         }
     }
-
+    //updating scoreboard and leaderboard with the help of result of scoreboard by using its getters and setters
     void settingScoreBoard()
     {
         scoreBoard.setname(playerName);
@@ -199,7 +197,7 @@ private:
         window.display();
     }
 };
-
+// main gamee
 int main() {
     Game game;
     game.run();

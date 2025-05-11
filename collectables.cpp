@@ -55,7 +55,7 @@ public:
 	{
 
 		static Music collisionmusic;
-		collisionmusic.openFromFile("Data/Ring.ogg");
+		collisionmusic.openFromFile("Data/Ring.wav");
 		collisionmusic.setVolume(60);
 		collisionmusic.play();
 	}
@@ -65,20 +65,15 @@ public:
 		return "ring";
 	}
 };
-//SoundBuffer Rings::ringSound;
-//bool Rings::ringSoundLoaded = false;
-
 
 class ExtraLives: public Collectibles {
-	 SoundBuffer lifeSound;
-	bool lifeSoundLoaded;
+
 public:
 	ExtraLives(int r, int c, char** lvl) : Collectibles(r, c)
 	{
 		texture.loadFromFile("Data/life.png");
 		sprite.setTexture(texture);
 		sprite.setScale(3.0f, 3.0f);
-		lifeSoundLoaded = false;
 		lvl[r][c] = 'L';
 	}
 	
@@ -88,24 +83,20 @@ public:
 	}
 	~ ExtraLives(){}
 	virtual void playSound() {
-		if (!lifeSoundLoaded) {
-			lifeSound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Stage\LargeBooster.wav");
-			lifeSoundLoaded = true;
-		}
-		Sound sound(lifeSound);
-		sound.play();
+		static Music collisionmusic;
+		collisionmusic.openFromFile("Data/LargeBooster.wav");
+		collisionmusic.setVolume(60);
+		collisionmusic.play();
 	}
 	virtual string typeOfCollectible()
 	{
 		return "extralife";
 	}
 };
-//SoundBuffer ExtraLives::lifeSound;
-//bool ExtraLives::lifeSoundLoaded = false;
+
 
 class SpecialAbility: public Collectibles {
-SoundBuffer abilitySound;
-	 bool abilitySoundLoaded;
+
 public:
 	SpecialAbility(int r, int c, char** lvl) : Collectibles(r, c)
 	{
@@ -113,7 +104,6 @@ public:
 		sprite.setTexture(texture);
 		sprite.setScale(3.0f,3.0f);
 		lvl[r][c] = 'A';
-		abilitySoundLoaded = false;
 	}
 	
 	virtual void collect(char** lvl)
@@ -121,12 +111,10 @@ public:
 		lvl[row][column] = ' ';
 	}
 	virtual void playSound() {
-		if (!abilitySoundLoaded) {
-			abilitySound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Global\SpecialRing.wav");
-			abilitySoundLoaded = true;
-		}
-		Sound sound(abilitySound);
-		sound.play();
+		static Music collisionmusic;
+		collisionmusic.openFromFile("Data/HLaser.wav");
+		collisionmusic.setVolume(60);
+		collisionmusic.play();
 	}
 	~SpecialAbility(){}
 	virtual string typeOfCollectible()
@@ -134,8 +122,7 @@ public:
 		return "specialability";
 	}
 };
-//SoundBuffer SpecialAbility::abilitySound;
-//bool SpecialAbility::abilitySoundLoaded = false;
+
 
 class CollectibleFactory {
 	int size;

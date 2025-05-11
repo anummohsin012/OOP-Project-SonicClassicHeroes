@@ -453,7 +453,7 @@ public:
 
 class Level1 :public Levels {
 public:
-    Level1(Timer& timer):Levels(14,200,5,1,0.8,1,120.0f,timer)
+    Level1(Timer& timer):Levels(14,200,5,1,0.8,1,90.0f,timer)
     { 
         levelIntroText.setString("LEVEL 1");
 
@@ -585,7 +585,7 @@ public:
 
 class Level2 :public Levels {
 public:
-    Level2(Timer& timer) :Levels(14, 250, 20, 1, 1, 1,90.0f, timer)
+    Level2(Timer& timer) :Levels(14, 250, 20, 1, 1, 1,60.0f, timer)
     {
         levelIntroText.setString("LEVEL 2");
 
@@ -708,7 +708,7 @@ public:
 
 class Level3 :public Levels {
 public:
-    Level3(Timer& timer) :Levels(14, 300, 25, 1, 0.4, 0.5,120.0f, timer)
+    Level3(Timer& timer) :Levels(14, 300, 25, 1, 0.4, 0.5,90.0f, timer)
     {
         levelIntroText.setString("LEVEL 3");
 
@@ -797,11 +797,6 @@ public:
             lvl[5][col] = 'w';
             factory.spawn(new Rings(4, col, lvl));
             rings++;
-        }
-
-        for (int col = 270; col < 300; col++)
-        {
-            lvl[4][col] = 'v';
         }
 
         addEnemy(0, 270 * cell_size, 11 * cell_size);
@@ -1045,17 +1040,6 @@ public:
     }
 };
 
-int main()
-{
-    RenderWindow window(VideoMode(1200, 896), "Sonic Classic Heroes");
-    Timer timer(120.0f);
-    window.setFramerateLimit(60);
-    Level3 Bosslevel(timer);
-
-    Bosslevel.run(window); 
-
-    return 0;
-}
 
 
 

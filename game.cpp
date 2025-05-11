@@ -20,8 +20,8 @@ public:
     ScoreBoard(RenderWindow& win) :total_score(0), name(""), window(win) {
         tex.loadFromFile("Data/scoreboard.png");
         spr.setTexture(tex);
-        float scaleX = 1200.f / 300.f;
-        float scaleY = 896.f / 168.f;
+        float scaleX = 1200.f / 600.f;
+        float scaleY = 896.f / 451.f;
         spr.setScale(scaleX, scaleY);
         if (!font.loadFromFile("font/arial.ttf")) {
             cout << "Failed to load font\n";
@@ -31,7 +31,7 @@ public:
         {
             texts[i].setFont(font);
             texts[i].setCharacterSize(70);
-            texts[i].setFillColor(Color::Red);
+            texts[i].setFillColor(Color::Black);
             texts[i].setStyle(Text::Bold);
         }
     }
@@ -57,7 +57,7 @@ public:
 
         for (int i = 0; i < 6; i++) 
         {
-            texts[i].setPosition(330, 250 + i * 70); // Adjust X, Y positions
+            texts[i].setPosition(50, 50 + i * 70); // Adjust X, Y positions
         }
     }
     void display()

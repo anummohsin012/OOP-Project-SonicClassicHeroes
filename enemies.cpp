@@ -4,33 +4,37 @@
 
 #include "Player.cpp"
 using namespace sf;
-class Enemy {
+class Enemy { //base class for enemies
 protected:
-    float x, y;
-    float speed;
+    float x;
+    float y;
+    float speed; 
     int hp;
     bool alive;
     Texture texture;
     Sprite sprite;
-    int width, height;
-   float hitboxl, hitboxt,hitboxr, hitboxb;
-   Clock damageclock;
-   float damagecooldown;
-   bool damaged;
+    int width, height; 
+    float hitboxl, hitboxt,hitboxr, hitboxb;
+    //timer clockes with cooldown
+    Clock damageclock; 
+    float damagecooldown;
+    bool damaged;
 
 public:
     Enemy(float x, float y, float spd, int health, int w, int h ,float hitboxL, float hitboxT, float hitboxR, float hitboxB)
         : x(x), y(y), speed(spd), hp(health), alive(true), width(w), height(h), hitboxl(hitboxL), hitboxt(hitboxT), hitboxr(hitboxR), hitboxb(hitboxB),damagecooldown(1.0f) {
        
     }
-
+    // folowing polynmorphism with pure virtayal functions making it an abstarct class
+    
     virtual void updateposi(const Player* player, char** lvl, float cell_size) = 0;
-        void draw(RenderWindow& window, float scrollOffsetX = 0) {
+       //to draww all enemies
+    void draw(RenderWindow& window, float scrollOffsetX = 0) {
         if (alive) {
             sprite.setPosition(x - scrollOffsetX, y);
             window.draw(sprite);
         }
-    }
+    }   //damage handling
         void takeDamage() {
             if (damageclock.getElapsedTime().asSeconds() >= damagecooldown) {
                 hp -= 1;
@@ -58,8 +62,9 @@ public:
     float getBottom() const { 
         return y + hitboxb; 
     }
+    // tp check collisions betwwen enemies ans okayer
     static int checkcollision(PlayerManager& manager, Enemy* enemies[], int enemyCount) {
-        float plax = manager.getLeader()->getXposition();
+        float plax = manager.getLeader()->getXposition(); //by getting location of player through getters and setters 
         float play = manager.getLeader()->getYPosition();
         float plaw = 40.f * 2.5f;
         float plah = 40.f * 2.5f;
@@ -75,7 +80,6 @@ public:
                 float enemeyr = enemies[i]->getRight();
                 float enemeyt = enemies[i]->getTop();
                 float enemeyb = enemies[i]->getBottom();
-
                 if (plax < enemeyr && plax + plaw > enemeyl && play < enemeyb && play + plah > enemeyt) 
                 {
                     collisionmusic.play();
@@ -93,44 +97,12 @@ public:
         return kills;
         
     } 
-    virtual ~Enemy() {}
+    virtual ~Enemy() {} //destructor
 };
-class Projectile {
-private:
-    float x, y;
-    float speedX, speedY;
-    bool active;
-    Texture texture;
-    Sprite sprite;
-
-public:
-    Projectile(float startX, float startY, float dirX, float dirY)
-        : x(startX), y(startY), speedX(dirX), speedY(dirY), active(true) {
-        texture.loadFromFile("Data/life.png");
-        sprite.setTexture(texture);
-        sprite.setScale(1.0f, 1.0f);
-        sprite.setPosition(x, y);
-    }
-    void update() {
-        x += speedX;
-        y += speedY;
-        sprite.setPosition(x, y);
-    }
-    void draw(sf::RenderWindow& window) {
-        if (active)
-            window.draw(sprite);
-    }
-    bool isActive() const { return active; }
-    float getX() const { return x; }
-    float getY() const { return y; }
-    float getWidth() const { return 20.f; } 
-    float getHeight() const { return 20.f; }
-};
-
-
-
+//
 class Crawler : public Enemy {
 protected:
+    //helper function to check how we turn around
     bool shouldTurnAround(char** lvl, float cell_size) {
         float fro = (speed > 0) ? getRight() + 1 : getLeft() - 1;
         float ycor = getBottom() - 5;
@@ -158,6 +130,7 @@ public:
         hitboxt = 0;       
         hitboxb = 60.0f;
     }
+
     void movement(char** lvl, float cell_size) override 
     {
         if (shouldTurnAround(lvl, cell_size)) {
@@ -407,6 +380,7 @@ public:
 
 class EnemyFactory {
 public:
+    //makes enemy based on it type and other paramters
     static Enemy* createEnemy(int type, float x, float y, int width, int height) {
         if (type == 0)
             return new Motobug(x, y, width, height);

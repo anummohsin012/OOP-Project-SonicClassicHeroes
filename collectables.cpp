@@ -35,10 +35,10 @@ public:
 	virtual string typeOfCollectible() = 0;
 };
 
-class Rings :public Collectibles {
-
+class Rings:public Collectibles{
+	
 public:
-	Rings(int r, int c, char** lvl) :Collectibles(r, c)
+	Rings(int r,int c, char** lvl):Collectibles(r,c)
 	{
 		texture.loadFromFile("Data/ring.png");
 		sprite.setTexture(texture);
@@ -51,20 +51,22 @@ public:
 		lvl[row][column] = ' ';
 		playSound();
 	}
-	virtual void playSound()
+	virtual void playSound() 
 	{
 
 		static Music collisionmusic;
-		collisionmusic.openFromFile("Data/Ring.wav");
+		collisionmusic.openFromFile("Data/Ring.ogg");
 		collisionmusic.setVolume(60);
 		collisionmusic.play();
 	}
-	~Rings() {}
+	~ Rings(){}
 	virtual string typeOfCollectible()
 	{
 		return "ring";
 	}
 };
+//SoundBuffer Rings::ringSound;
+//bool Rings::ringSoundLoaded = false;
 
 
 class ExtraLives: public Collectibles {
@@ -83,23 +85,23 @@ public:
 	virtual void collect(char** lvl)
 	{
 		lvl[row][column] = ' ';
-		playSound();
 	}
 	~ ExtraLives(){}
-	virtual void playSound()
-	{
-
-		static Music collisionmusic;
-		collisionmusic.openFromFile("Data/LargeBooster.wav");
-		collisionmusic.setVolume(60);
-		collisionmusic.play();
+	virtual void playSound() {
+		if (!lifeSoundLoaded) {
+			lifeSound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Stage\LargeBooster.wav");
+			lifeSoundLoaded = true;
+		}
+		Sound sound(lifeSound);
+		sound.play();
 	}
 	virtual string typeOfCollectible()
 	{
 		return "extralife";
 	}
 };
-
+//SoundBuffer ExtraLives::lifeSound;
+//bool ExtraLives::lifeSoundLoaded = false;
 
 class SpecialAbility: public Collectibles {
 SoundBuffer abilitySound;
@@ -118,13 +120,13 @@ public:
 	{
 		lvl[row][column] = ' ';
 	}
-	virtual void playSound()
-	{
-
-		static Music collisionmusic;
-		collisionmusic.openFromFile("Data/HLaser.wav");
-		collisionmusic.setVolume(60);
-		collisionmusic.play();
+	virtual void playSound() {
+		if (!abilitySoundLoaded) {
+			abilitySound.loadFromFile("Sprites\Sonic the Hedgehog CD 2011 - Sound Effects\Global\SpecialRing.wav");
+			abilitySoundLoaded = true;
+		}
+		Sound sound(abilitySound);
+		sound.play();
 	}
 	~SpecialAbility(){}
 	virtual string typeOfCollectible()
@@ -132,7 +134,8 @@ public:
 		return "specialability";
 	}
 };
-
+//SoundBuffer SpecialAbility::abilitySound;
+//bool SpecialAbility::abilitySoundLoaded = false;
 
 class CollectibleFactory {
 	int size;

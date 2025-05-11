@@ -452,7 +452,7 @@ public:
 
 class Level1 :public Levels {
 public:
-    Level1(Timer& timer):Levels(14,200,5,1,0.8,1,90.0f,timer)  
+    Level1(Timer& timer):Levels(14,200,5,1,0.8,1,90.0f,timer)
     { 
         levelIntroText.setString("LEVEL 1");
 
@@ -466,7 +466,6 @@ public:
     }
     virtual void setObstaclesandCollectibles() override
     {
-        //boundary
         for (int i = 0; i < 200; i++)
         {
             lvl[0][i] = 'w';
@@ -483,6 +482,7 @@ public:
 
         for (int col = 5; col < 65; col++)
         {
+            lvl[11][col] = ' ';
             if (col % 5 == 0)
             {
                 factory.spawn(new Rings(10, col, lvl));
@@ -494,19 +494,18 @@ public:
         {
             for (int w = 0; w < 4; w++)
             {
-                lvl[8][col + w] = 'w'; 
+                lvl[8][col + w] = 'w';
             }
             factory.spawn(new Rings(7, col, lvl));
             rings++;
         }
 
-
-        //tails region
         factory.spawn(new SpecialAbility(10, 62, lvl));
         addEnemy(0, 30 * cell_size, 11 * cell_size);
 
         for (int col = 70; col < 130; col++)
         {
+            lvl[11][col] = ' ';
             if (col % 10 == 0)
             {
                 factory.spawn(new Rings(6, col, lvl));
@@ -514,20 +513,14 @@ public:
             }
         }
 
-        for (int col = 75; col < 125; col += 12)
-        {
-            for (int w = 0; w < 5; w++)
-            {
-                lvl[7][col + w] = 'w';
-            }
-            if (col % 2 == 1)
-            {
-                factory.spawn(new Rings(6, col, lvl));
-                rings++;
-            }
-        }
+    // --- PITS in accessible areas ---
+    lvl[12][35] = 'p';
+    lvl[12][70] = 'p';
+    lvl[12][125] = 'p';
+    lvl[13][35] = 'p';
+    lvl[13][70] = 'p';
+    lvl[13][125] = 'p';
 
-        //knuckles area
         factory.spawn(new SpecialAbility(10, 67, lvl));
         addEnemy(1, 105 * cell_size, 11 * cell_size);
 
@@ -545,9 +538,6 @@ public:
             }
         }
 
-        //sonic 
-        factory.spawn(new SpecialAbility(10, 132, lvl));
-
         for (int col = 140; col < 180; col += 13)
         {
             for (int w = 0; w < 5; w++)
@@ -561,7 +551,7 @@ public:
             }
         }
 
-     
+        factory.spawn(new SpecialAbility(10, 132, lvl));
         addEnemy(2, 165 * cell_size, 4 * cell_size);
 
         factory.spawn(new ExtraLives(10, 80, lvl));
@@ -591,7 +581,7 @@ public:
 
 class Level2 :public Levels {
 public:
-    Level2(Timer& timer) :Levels(14, 250, 20, 1, 1, 1,60.0f, timer)
+    Level2(Timer& timer) :Levels(14, 250, 20, 1, 1, 1,90.0f, timer)
     {
         levelIntroText.setString("LEVEL 2");
 
@@ -602,45 +592,45 @@ public:
     }
     virtual void setObstaclesandCollectibles() override
     {
-        for (int i = 0; i < 250; i++)
+        //basic level layout
+        for (int i = 0;i < width;i++) //originally setting wall on the whole ground
         {
-            lvl[0][i] = 'w';
-            lvl[1][i] = 'w';
             lvl[12][i] = 'w';
             lvl[13][i] = 'w';
         }
-        for (int i = 1; i < 3; i++)
+        lvl[0][0] = 'w';
+        lvl[1][0] = 'w';
+
+        for (int i = 3;i < width;i++) //originally setting wall on the whole ground
         {
-            lvl[0][i] = ' ';
-            lvl[1][i] = ' ';
+            lvl[0][i] = 'w';
+            lvl[1][i] = 'w';
         }
 
-        //tails region
-        factory.spawn(new SpecialAbility(10, 8, lvl));
         for (int col = 10; col < 40; col++)
         {
-            lvl[11][col] = 's';
+            lvl[10][i] = 'w';
         }
-        
+        factory.spawn(new SpecialAbility(10, 8, lvl));
         addEnemy(1, 18 * cell_size, 11 * cell_size);
         addEnemy(1, 34 * cell_size, 11 * cell_size);
 
-
-        //kunckles
         factory.spawn(new SpecialAbility(10, 50, lvl));
         for (int col = 60; col < 90; col += 2)
         {
-            lvl[10][col] = 'v';
-            if (col % 4 == 1)
-            {
-                factory.spawn(new Rings(9, col, lvl));
-                rings++;
-            }
+            lvl[8][i] = 'w';
+        }
+        for (int i = 22;i < 42;i % 2 == 0 ? i += 1 : i += 2)
+        {
+            lvl[6][i] = 'w';
+        }
+        for (int i = 44;i < 54;i += 1)
+        {
+            lvl[5][i] = 'w';
         }
         addEnemy(2, 75 * cell_size, 4 * cell_size);
         factory.spawn(new ExtraLives(10, 88, lvl));
 
-        //sonic
         factory.spawn(new SpecialAbility(10, 100, lvl));
         for (int col = 110; col < 180; col++)
         {
@@ -649,12 +639,12 @@ public:
                 factory.spawn(new Rings(10, col, lvl));
                 rings++;
             }
+            lvl[11][col] = ' ';
         }
         addEnemy(0, 130 * cell_size, 11 * cell_size);
         addEnemy(3, 175 * cell_size, 4 * cell_size);
         factory.spawn(new ExtraLives(10, 160, lvl));
-         
-        //pits
+
         lvl[12][50] = 'p';
         lvl[13][50] = 'p';
         lvl[12][100] = 'p';
@@ -662,39 +652,13 @@ public:
         lvl[12][200] = 'p';
         lvl[13][200] = 'p';
 
-        for (int col = 0; col < 236; col += 20)
-        {
-            for (int row = 5; row < 10; row++)
-            {
-                if (col < 10 || col > 40)
-                {
-                    lvl[row][col] = 'w';
-                }
-            }
 
-            if (col + 5 < 236)
-            {
-                lvl[9][col + 5] = 'w';
-            }
-            if (col + 7 < 236)
-            {
-                lvl[8][col + 7] = 'w';
-            }
-            if (col + 9 < 236)
-            {
-                lvl[7][col + 9] = 'w';
-            }
+        for (int i = 48;i < 50;i += 1)
+        {
+            lvl[12][i] = 'p';
+            lvl[13][i] = 'p';
         }
 
-        factory.spawn(new Rings(5, 120, lvl)); rings++;
-        factory.spawn(new Rings(6, 62, lvl));  rings++;
-        factory.spawn(new Rings(7, 80, lvl));  rings++;
-        factory.spawn(new ExtraLives(4, 190, lvl));
-        factory.spawn(new SpecialAbility(6, 220, lvl));
-
-        addEnemy(0, 40 * cell_size, 11 * cell_size);
-        addEnemy(2, 190 * cell_size, 4 * cell_size);
-        addEnemy(3, 230 * cell_size, 4 * cell_size);
     }
     virtual void trigger(RenderWindow& window, float offset = 0) override
     {
@@ -719,7 +683,7 @@ public:
 
 class Level3 :public Levels {
 public:
-    Level3(Timer& timer) :Levels(14, 300, 25, 1, 0.4, 0.5,90.0f, timer)
+    Level3(Timer& timer) :Levels(14, 300, 25, 1, 0.3, 0.5,120.0f, timer)
     {
         levelIntroText.setString("LEVEL 3");
 
@@ -731,35 +695,34 @@ public:
     }
     virtual void setObstaclesandCollectibles() override
     {
-        for (int i = 0; i < 300; i++)
+        //basic level layout
+        for (int i = 0;i < width;i++) //originally setting wall on the whole ground
+        {
+            lvl[12][i] = 'w';
+            lvl[13][i] = 'w';
+        }
+        lvl[0][0] = 'w';
+        lvl[1][0] = 'w';
+
+        for (int i = 3;i < width;i++) //originally setting wall on the whole ground
         {
             lvl[0][i] = 'w';
             lvl[1][i] = 'w';
+        }
+
+        for (int i = 0;i < 200;i++) //originally setting wall on the whole ground
+        {
             lvl[12][i] = 'w';
             lvl[13][i] = 'w';
         }
 
-        for (int i = 1; i < 3; i++)
+        factory.spawn(new Rings(10, 8, lvl));
+        rings++;
+        for (int i = 10;i < 14;i++)
         {
-            lvl[0][i] = ' ';
-            lvl[1][i] = ' ';
+            lvl[10][i] = 'w';
         }
 
-        for (int col = 20; col < 100; col += 10)
-        {
-            lvl[10][col] = 'w';
-            factory.spawn(new Rings(9, col, lvl));
-            rings++;
-        }
-
-        for (int col = 40; col < 120; col += 12)
-        {
-            lvl[7][col] = 'w';
-            factory.spawn(new Rings(6, col, lvl));
-            rings++;
-        }
-
-        //tails
         factory.spawn(new SpecialAbility(10, 120, lvl));
 
         addEnemy(1, 50 * cell_size, 4 * cell_size);
@@ -777,73 +740,41 @@ public:
                 lvl[13][col] = 'p';
             }
         }
-        //sonic
-        factory.spawn(new SpecialAbility(10, 180, lvl));
+
         for (int col = 140; col < 200; col += 15)
         {
-            lvl[10][col] = 'w';
-            factory.spawn(new ExtraLives(9, col, lvl));
+            lvl[5][i] = 'w';
         }
-
-        for (int col = 170; col < 230; col += 20)
+        for (int i = 54;i < 64;i += 2)
         {
-            lvl[9][col] = 'w';
-            factory.spawn(new Rings(8, col, lvl));
-            rings++;
+            lvl[5][i] = 'w';
         }
+        factory.spawn(new SpecialAbility(11, 22, lvl));
 
+        lvl[11][24] = 'v';
+        lvl[11][30] = 'v';
+        lvl[11][38] = 'v';
 
         addEnemy(1, 225 * cell_size, 11 * cell_size);
         addEnemy(3, 230 * cell_size, 4 * cell_size);
 
-        for (int col = 200; col < 250; col += 15)
+        for (int i = 48;i < 50;i += 1)
         {
-            lvl[7][col] = 'w';
-            lvl[6][col] = 'w';
-            factory.spawn(new Rings(5, col, lvl));
-            rings++;
+            lvl[12][i] = 'p';
+            lvl[13][i] = 'p';
         }
         //knuckles
         factory.spawn(new SpecialAbility(10, 240, lvl));
 
-        addEnemy(3, 265 * cell_size, 4 * cell_size);
 
-        for (int col = 260; col < 285; col++)
-        {
-            lvl[5][col] = 'w';
-            factory.spawn(new Rings(4, col, lvl));
-            rings++;
-        }
 
-        addEnemy(0, 270 * cell_size, 11 * cell_size);
-        addEnemy(2, 240 * cell_size, 4 * cell_size);
-
-        
+        factory.spawn(new SpecialAbility(10, 180, lvl));
         factory.spawn(new ExtraLives(10, 100, lvl));
         factory.spawn(new ExtraLives(10, 250, lvl));
         factory.spawn(new ExtraLives(10, 280, lvl));
     }
-
-
-
     virtual void trigger(RenderWindow& window, float offset = 0) override
     {
-        door.setScale(2.5f, 2.5f);
-        if (manager.getLeader()->getXposition() >= 290 * 64.f && manager.getLeader()->getXposition() <= 293 * 64.f && manager.getLeader()->getYPosition() <= 12 * 64 && manager.getLeader()->getYPosition() >= 10 * 64 && ringscollected == rings)
-        {
-            door.setPosition(291 * 64 - offset, 8.7 * 64);
-            door.setTexture(dooropen);
-            window.draw(door);
-            sleep(seconds(2));
-            lvlFinished = true;
-        }
-        else
-        {
-            door.setPosition(291 * 64 - offset, 8.7 * 64);
-            door.setTexture(doorclosed);
-            window.draw(door);
-        }
-    
     }
 };
 class BossLevel :public Levels {
@@ -880,7 +811,7 @@ class BossLevel :public Levels {
     }
     bool run(RenderWindow& window) override 
     {
-        float scrollOffsetX = 0.0f; //we dont want any offset so samr run without offset
+        float scrollOffsetX = 0.0f;
         Event ev;
 
         if (manager.isGameOver())
@@ -1047,7 +978,6 @@ public:
         return scores;
     }
 };
-
 
 
 

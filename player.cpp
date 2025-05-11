@@ -37,7 +37,7 @@ protected:
 	float abilityTime;
 	bool abilityIsActive;
 	int height, width; //of level
-	const float LEVEL_BOTTOM; //maximum bottom
+	const float LEVEL_BOTTOM;
 
 public:
 	Player(float s,float a, float x, float y, float jump, float gr,int h,int w)
@@ -60,15 +60,15 @@ public:
 
 	void updatePhysicsWithCollision(char** lvl, int cell_size)
 	{
-		//midpoints for collision checks
+		// Midpoints for collision checks
 		const float vertical_mid = (HITBOX_TOP + HITBOX_BOTTOM) / 2;
 		const float horizontal_mid = (HITBOX_LEFT + HITBOX_RIGHT) / 2;
 
-		// calculate next position
+		// Calculate next position
 		float next_x = player_x + velocity_x;
 		float next_y = player_y + velocity_y;
 
-		//horizontal collision check
+		// Horizontal collision check
 		int left_col = (int)(next_x + HITBOX_LEFT) / cell_size;
 		int right_col = (int)(next_x + HITBOX_RIGHT) / cell_size;
 		int mid_row = (int)(player_y + vertical_mid) / cell_size;
@@ -77,12 +77,12 @@ public:
 		{
 			if (left_col >= 0 && left_col < width && (lvl[mid_row][left_col] == 'w' || lvl[mid_row][left_col] == 'v' || lvl[mid_row][left_col] == 's'))
 			{
-				if (lvl[mid_row][left_col] == 'v'&&isInvincible()) //If player is invincible, destroy the wall
+				if (lvl[mid_row][left_col] == 'v'&&isInvincible()) // If player is invincible, destroy the wall
 				{
-					lvl[mid_row][left_col] = ' '; 
-					player_x = next_x; 
+					lvl[mid_row][left_col] = ' '; // Remove the wall
+					player_x = next_x; // Continue moving
 				}
-				else 
+				else // Normal collision
 				{
 					velocity_x = 0;
 					player_x = (left_col + 1) * cell_size - HITBOX_LEFT;
@@ -95,12 +95,12 @@ public:
 			}
 			else if (right_col >= 0 && right_col < width && (lvl[mid_row][right_col] == 'w' || lvl[mid_row][right_col] == 'v' || lvl[mid_row][right_col] == 's'))
 			{
-				if (lvl[mid_row][right_col] == 'v' && isInvincible()) 
+				if (lvl[mid_row][right_col] == 'v' && isInvincible()) // If player is invincible, destroy the wall
 				{
-					lvl[mid_row][right_col] = ' '; 
-					player_x = next_x;
+					lvl[mid_row][right_col] = ' '; // Remove the wall
+					player_x = next_x; // Continue moving
 				}
-				else 
+				else // Normal collision
 				{
 					velocity_x = 0;
 					player_x = right_col * cell_size - HITBOX_RIGHT;
@@ -117,7 +117,7 @@ public:
 			}
 		}
 
-		//vertical collision check
+		// Vertical collision check
 		int top_row = (int)(next_y + HITBOX_TOP) / cell_size;
 		int bottom_row = (int)(next_y + HITBOX_BOTTOM) / cell_size;
 		int mid_col = (int)(player_x + horizontal_mid) / cell_size;
@@ -132,15 +132,15 @@ public:
 			}
 			else if (lvl[bottom_row][mid_col] == 'p')
 			{
-				//mark for respawn
+				// Pit - stand on it but mark for respawn
 				player_y = bottom_row * cell_size - HITBOX_BOTTOM;
 				velocity_y = 0;
 				onground = true;
-				died = true; 
+				died = true; // This will trigger respawn logic
 			}
 			else if (top_row >= 0 && top_row < height &&(lvl[top_row][mid_col] == 'w'))
 			{
-				player_y = (top_row + 1) * cell_size - HITBOX_TOP;  //push player down
+				player_y = (top_row + 1) * cell_size - HITBOX_TOP;  // push player down
 				velocity_y += gravity;
 			}
 			else
@@ -491,6 +491,7 @@ public:
 			{
 				flying = false;
 			}
+			// Apply reduced upward velocity
 			if (flying) 
 			{
 				if ((player_y <= flight_y - 300.f))
@@ -504,7 +505,7 @@ public:
 			}
 			else 
 			{
-				velocity_y = 0;  //stop upward motion once timer stops
+				velocity_y = 0;  // Stop upward motion once timer stops
 			}
 		}
 		// gravity when on the floor or jumping
@@ -621,7 +622,7 @@ bool facingRight;
 				setSprite();
 			}
 		}
-		virtual void useSpecialAbility() override
+		virtual void useSpecialAbility() override //WORK ON CLOCK NOTE TO SELF SET KNUCKLES SPECIAL ABILITY
 		{
 			if (!invincible) 
 			{
@@ -779,16 +780,17 @@ public:
 	}
 void checkPits() 
 {
+    // Check all players (leader and followers)
     for (int i = 0; i < 3; ++i) 
     {
         Player* player = players[i];
         
-        //respawn if player has died 
+        // Only respawn if player has died (marked in collision)
         if (player->isdead()) 
         {
             if (i == currentPlayer) 
             {
-                //leaders falling means everyone respawns
+                // Leader fell - respawn everyone
                 removeLife();
                 if (!gameover) 
                 {
@@ -799,11 +801,11 @@ void checkPits()
                         players[j]->setdead(false) ;
                     }
                 }
-                break;
+                break; // Only process leader fall once
             }
             else 
             {
-                //followers respawn near leader
+                // Follower fell - respawn near leader
                 player->respawn(getLeader()->getXposition(), 100.f);
                 player->setdead(false);
             }

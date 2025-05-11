@@ -3,7 +3,7 @@ using namespace sf;
 
 class Timer {
 private:
-    sf::Clock clock;
+    Clock clock;
     float duration;
     bool working;
 public:

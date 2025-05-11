@@ -803,7 +803,7 @@ public:
             factory.spawn(new Rings(5, col, lvl));
             rings++;
         }
-        //knuckles
+        //knuckles region
         factory.spawn(new SpecialAbility(10, 240, lvl));
 
         addEnemy(3, 265 * cell_size, 4 * cell_size);

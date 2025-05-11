@@ -75,7 +75,7 @@ public:
 
 		if (mid_row >= 0 && mid_row < height)
 		{
-			if (left_col >= 0 && left_col < width && (lvl[mid_row][left_col] == 'w' || lvl[mid_row][left_col] == 'v'))
+			if (left_col >= 0 && left_col < width && (lvl[mid_row][left_col] == 'w' || lvl[mid_row][left_col] == 'v' || lvl[mid_row][left_col] == 's'))
 			{
 				if (lvl[mid_row][left_col] == 'v'&&isInvincible()) // If player is invincible, destroy the wall
 				{
@@ -88,7 +88,12 @@ public:
 					player_x = (left_col + 1) * cell_size - HITBOX_LEFT;
 				}
 			}
-			else if (right_col >= 0 && right_col < width && (lvl[mid_row][right_col] == 'w' || lvl[mid_row][right_col] == 'v'))
+			else if (left_col < 1)
+			{
+				velocity_x = 0;
+				player_x = (left_col + 1) * cell_size - HITBOX_LEFT;
+			}
+			else if (right_col >= 0 && right_col < width && (lvl[mid_row][right_col] == 'w' || lvl[mid_row][right_col] == 'v' || lvl[mid_row][right_col] == 's'))
 			{
 				if (lvl[mid_row][right_col] == 'v' && isInvincible()) // If player is invincible, destroy the wall
 				{
@@ -100,6 +105,11 @@ public:
 					velocity_x = 0;
 					player_x = right_col * cell_size - HITBOX_RIGHT;
 				}
+			}
+			else if (right_col >= width-1)
+			{
+				velocity_x = 0;
+				player_x = right_col * cell_size - HITBOX_RIGHT;
 			}
 			else
 			{
@@ -114,7 +124,7 @@ public:
 
 		if (mid_col >= 0 && mid_col < width && bottom_row>=0 && bottom_row<height)
 		{
-			if ((bottom_row >= 0 && bottom_row < height && (lvl[bottom_row][mid_col] == 'w' || lvl[bottom_row][mid_col] == 's')))
+			if ((bottom_row >= 0 && bottom_row < height && (lvl[bottom_row][mid_col] == 'w' || lvl[bottom_row][mid_col] == 's' || lvl[bottom_row][mid_col] == 'v')))
 			{
 				player_y = bottom_row * cell_size - HITBOX_BOTTOM;
 				velocity_y = 0;
@@ -128,8 +138,7 @@ public:
 				onground = true;
 				died = true; // This will trigger respawn logic
 			}
-			else if (top_row >= 0 && top_row < height &&
-				(lvl[top_row][mid_col] == 'w'/* || lvl[top_row][mid_col] == 's'*/))
+			else if (top_row >= 0 && top_row < height &&(lvl[top_row][mid_col] == 'w'))
 			{
 				player_y = (top_row + 1) * cell_size - HITBOX_TOP;  // push player down
 				velocity_y += gravity;

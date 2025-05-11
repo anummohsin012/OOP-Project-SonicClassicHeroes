@@ -36,12 +36,10 @@ public:
 };
 
 class Rings:public Collectibles{
-	 SoundBuffer ringSound;
-	 bool ringSoundLoaded;
+	
 public:
 	Rings(int r,int c, char** lvl):Collectibles(r,c)
 	{
-		ringSoundLoaded = false;
 		texture.loadFromFile("Data/ring.png");
 		sprite.setTexture(texture);
 		sprite.setScale(1.5f, 1.5f);
@@ -51,17 +49,15 @@ public:
 	virtual void collect(char** lvl)
 	{
 		lvl[row][column] = ' ';
+		playSound();
 	}
 	virtual void playSound() 
 	{
-		if (!ringSoundLoaded) 
-		{
-			ringSound.loadFromFile("Data/Ring.wav");
-			ringSoundLoaded = true;
-		}
-		Sound sound(ringSound);
-		sound.setVolume(50.f);
-		sound.play();
+
+		static Music collisionmusic;
+		collisionmusic.openFromFile("Data/Ring.ogg");
+		collisionmusic.setVolume(60);
+		collisionmusic.play();
 	}
 	~ Rings(){}
 	virtual string typeOfCollectible()

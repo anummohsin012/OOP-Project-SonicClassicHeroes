@@ -934,16 +934,6 @@ public:
         return scores;
     }
 };
-int main()
-{
-    RenderWindow window(VideoMode(1200, 896), "Sonic Classic Heroes");
-    Timer timer(120.0f);
-    window.setFramerateLimit(60);
-    BossLevel Bosslevel(timer);
 
-    Bosslevel.run(window); // Launch full game loop from Level1
-
-    return 0;
-}
 
 

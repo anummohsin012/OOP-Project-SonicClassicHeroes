@@ -90,7 +90,7 @@ public:
 			}
 			else if (right_col >= 0 && right_col < width && (lvl[mid_row][right_col] == 'w' || lvl[mid_row][right_col] == 'v'))
 			{
-				if (lvl[mid_row][left_col] == 'v' && isInvincible()) // If player is invincible, destroy the wall
+				if (lvl[mid_row][right_col] == 'v' && isInvincible()) // If player is invincible, destroy the wall
 				{
 					lvl[mid_row][right_col] = ' '; // Remove the wall
 					player_x = next_x; // Continue moving

@@ -380,7 +380,7 @@ public:
             }
         }
     }
-    bool run(RenderWindow& window) {
+    virtual bool run(RenderWindow& window) {
         float scrollOffsetX = 0.0f;
         Event ev;
 
@@ -464,118 +464,86 @@ public:
        
         //to stretch the background to the size of the window required
     }
-    virtual void setObstaclesandCollectibles() override
+virtual void setObstaclesandCollectibles() override {
+    // Top and bottom boundary walls
+    for (int i = 0; i < 200; i++) {
+        lvl[0][i] = 'w';
+        lvl[1][i] = 'w';
+        lvl[12][i] = 'w';
+        lvl[13][i] = 'w';
+    }
+    for (int i = 1;i < 3;i++)
     {
+        lvl[0][i] = ' ';
+        lvl[1][i] = ' ';
+    }
 
-        //basic level layout
-        for (int i = 0;i < 200;i++) //originally setting wall on the whole ground
-        {
-            lvl[12][i] = 'w';
-            lvl[13][i] = 'w';
-        }
-        lvl[0][0] = 'w';
-        lvl[1][0] = 'w';
+    // --- TAILS REGION (spike floor, open sky above) ---
+    for (int col = 10; col < 30; col++) {
+        lvl[11][col] = 's'; // Spikes on ground
+    }
+    factory.spawn(new SpecialAbility(10, 8, lvl)); // Power-up before region
+    addEnemy(1, 15 * cell_size, 11 * cell_size);
+    addEnemy(1, 25 * cell_size, 11 * cell_size);
 
-        for (int i = 3;i < 200;i++) //originally setting wall on the whole ground
-        {
-            lvl[0][i] = 'w';
-            lvl[1][i] = 'w';
+    // --- KNUCKLES REGION (breakable walls) ---
+    factory.spawn(new SpecialAbility(10, 40, lvl));
+    for (int col = 45; col < 65; col += 2) {
+        lvl[10][col] = 'v';
+        if (col % 4 == 1) {
+            factory.spawn(new Rings(9, col, lvl)); rings++;
         }
+    }
+    addEnemy(2, 50 * cell_size, 4 * cell_size);
+    factory.spawn(new ExtraLives(10, 63, lvl));
 
-        for (int i = 0;i < 200;i++) //originally setting wall on the whole ground
-        {
-            lvl[12][i] = 'w';
-            lvl[13][i] = 'w';
-        }
-
-        for (int row = 10; row <= 12; row++) {
-            lvl[row][5] = 'w'; // Left wall
-            lvl[row][10] = 'w'; // Right wall
-        }
-        addEnemy(0, 11 * cell_size, 11 * cell_size);
-        addEnemy(0, 60 * cell_size, 11 * cell_size);
-        addEnemy(1, 7 * cell_size, 11 * cell_size);
-        addEnemy(1, 40 * cell_size, 11 * cell_size);
-        addEnemy(2, 4 * cell_size,  3* cell_size);
-            addEnemy(3, 10 * cell_size, 5* cell_size);
-        factory.spawn(new Rings(10, 8, lvl));
-        rings++;
-        for (int i = 10;i < 14;i++)
-        {
-            lvl[10][i] = 'w';
-        }
-        for (int i = 14;i < 22;i++)
-        {
-            lvl[8][i] = 'w';
-        }
-        for (int i = 22;i < 42;i%2==0?i+=1:i+=2)
-        {
-            lvl[6][i] = 'w';
-        }
-        for (int i = 44;i < 54;i+=1)
-        {
-            lvl[5][i] = 'w';
-        }
-        for (int i = 54;i < 64;i += 2)
-        {
-            lvl[5][i] = 'w';
-        }
-        factory.spawn(new SpecialAbility(11, 22, lvl));
-
-        lvl[11][24] = 'v';
-        lvl[11][30] = 'v';
-        lvl[11][38] = 'v';
-
-
-        for (int i = 48;i < 50;i += 1)
-        {
-            lvl[12][i] = 'p';
-            lvl[13][i] = 'p';
-        }
-        lvl[11][15] = 'w'; // Wall
-        addEnemy(0, 12 * 64, 11 * 64);
-        for (int i = 10;i < 30;i++)
-        {
-            lvl[9][i] = 'w';
-        }
-        for (int i = 30;i < 35;i+=2)
-        {
-            lvl[7][i] = 'w';
-            factory.spawn(new Rings(5, i, lvl));
+    // --- SONIC REGION (smooth ring path) ---
+    factory.spawn(new SpecialAbility(10, 75, lvl)); // Optional
+    for (int col = 80; col < 120; col++) {
+        if (col % 4 == 0) {
+            factory.spawn(new Rings(10, col, lvl));
             rings++;
         }
-        for (int i = 35;i < 45;i++)
-        {
-            lvl[5][i] = 'w';
-        }
-        factory.spawn(new ExtraLives(3, 40, lvl));
+        lvl[11][col] = ' '; // Smooth floor
+    }
+    addEnemy(0, 90 * cell_size, 11 * cell_size);
+    addEnemy(3, 115 * cell_size, 4 * cell_size);
+    factory.spawn(new ExtraLives(10, 110, lvl));
 
-        
-        //tails special region so it can fly  over it
-        factory.spawn(new SpecialAbility(11, 48, lvl));
-        for (int i = 50;i < 75;i++)
-        {
-            lvl[12][i] = 's';
+    // --- PITS in accessible areas ---
+    lvl[12][35] = 'p';
+    lvl[12][70] = 'p';
+    lvl[12][125] = 'p';
+    lvl[13][35] = 'p';
+    lvl[13][70] = 'p';
+    lvl[13][125] = 'p';
+
+    // --- MAZE WALLS: vertical and stepping blocks ---
+    for (int col = 0; col < 180; col += 15) {
+        for (int row = 5; row < 10; row++) {
+            if (col < 10 || col > 30)  // Leave Tails' region open
+                lvl[row][col] = 'w';   // Vertical wall divider
         }
-        
-        //sonic special region so it can run over it very fast
-        factory.spawn(new SpecialAbility(11, 98, lvl));
-        for (int i = 100;i < 140;i += 4)
-        {
-            factory.spawn(new Rings(11, i, lvl));
-            rings++;
-        }
-        for (int i = 100;i < 125;i++)
-        {
-            lvl[5][i] = 'w';
-        }
-        factory.spawn(new ExtraLives(10, 115, lvl));
+        // Add stepping platforms inside each segment
+        if (col + 5 < 180) lvl[9][col + 5] = 'w';
+        if (col + 7 < 180) lvl[8][col + 7] = 'w';
+        if (col + 9 < 180) lvl[7][col + 9] = 'w';
+    }
+
+    // --- Extra collectibles ---
+    factory.spawn(new Rings(5, 100, lvl)); rings++;
+    factory.spawn(new Rings(6, 52, lvl)); rings++;
+    factory.spawn(new Rings(7, 60, lvl)); rings++;
+    factory.spawn(new ExtraLives(4, 130, lvl));
+    factory.spawn(new SpecialAbility(6, 160, lvl));
+
+    // --- Additional Enemies at correct height ---
+    addEnemy(0, 60 * cell_size, 11 * cell_size);
+    addEnemy(2, 125 * cell_size, 4 * cell_size);
+    addEnemy(3, 150 * cell_size, 4 * cell_size);
+}
 
 
-        for (int i = 10;i < 12;i++)
-            lvl[12][i] = 'p';
-
-    } 
     virtual void trigger(RenderWindow& window, float offset = 0) override
     {
         door.setScale(2.5f, 2.5f);
@@ -775,7 +743,7 @@ public:
 };
 class BossLevel :public Levels {
     public:
-    BossLevel(Timer& timer) :Levels(14, 32, 25, 1, 1.2, 1.5, 120.0f, timer)
+    BossLevel(Timer& timer) :Levels(14, 18, 25, 1, 1.2, 1, 120.0f, timer)
     {
         levelIntroText.setString("BOSS LEVEL");
 
@@ -801,56 +769,58 @@ class BossLevel :public Levels {
             lvl[1][i] = 'w';
         }
 
-        for (int i = 0;i < 64;i++) //originally setting wall on the whole ground
+        for (int i = 0;i <width;i++) //originally setting wall on the whole ground
         {
             lvl[12][i] = 'w';
             lvl[13][i] = 'w';
         }
 
-        factory.spawn(new Rings(12, 9, lvl));
-        rings++;
-        for (int i = 10;i < 14;i++)
-        {
-            lvl[8][i] = 'w';
-        }
-        for (int i = 14;i < 22;i++)
-        {
-            lvl[12][i] = 'w';
-        }
-        for (int i = 22;i < 42;i % 2 == 0 ? i += 1 : i += 2)
-        {
-            lvl[2][i] = 'w';
-        }
-        for (int i = 44;i < 54;i += 1)
-        {
-            lvl[5][i] = 'w';
-        }
-        for (int i = 54;i < 64;i += 2)
-        {
-            lvl[5][i] = 'w';
-        }
-        factory.spawn(new SpecialAbility(11, 22, lvl));
-
-        lvl[11][24] = 'v';
-        lvl[11][30] = 'v';
-        lvl[11][38] = 'v';
-
         addEnemy(4, 4 * cell_size, 3 * cell_size);
-        for (int i = 48;i < 50;i += 1)
-        {
-            lvl[12][i] = 'p';
-            lvl[13][i] = 'p';
+
+
+    }
+    bool run(RenderWindow& window) override {
+        float scrollOffsetX = 0.0f; // No scrolling - always 0
+        Event ev;
+
+        if (manager.isGameOver())
+            window.close();
+
+        while (window.isOpen()) {
+            while (window.pollEvent(ev)) {
+                if (ev.type == Event::Closed)
+                    window.close();
+                if (ev.type == Event::KeyPressed) {
+                    if (ev.key.code == Keyboard::Z)
+                        manager.changePlayer();
+                }
+            }
+
+            if (manager.isGameOver() || isTimeUp()) {
+                return false;
+            }
+
+            if (lvlFinished) {
+                return true;
+            }
+
+            playersInputs();
+            physics();
+            updateEnemies(manager.getLeader(), lvl, cell_size);
+
+            // Render with fixed scrollOffsetX (0)
+            window.clear(Color::Black);
+            render(window, 0.0);
+            window.display();
         }
-
-
-
+        return false;
     }
     virtual void trigger(RenderWindow& window, float offset = 0) override
     {
         door.setScale(2.5f, 2.5f);
-        if (manager.getLeader()->getXposition() >= 60 * 64.f && manager.getLeader()->getXposition() <= 63 * 64.f && manager.getLeader()->getYPosition() <= 12 * 64 && manager.getLeader()->getYPosition() >= 10 * 64 && ringscollected == rings)
+        if (manager.getLeader()->getXposition() >= 10 * 64.f && manager.getLeader()->getXposition() <= 13 * 64.f && manager.getLeader()->getYPosition() <= 12 * 64 && manager.getLeader()->getYPosition() >= 10 * 64 && score == 50)
         {
-            door.setPosition(62* 64 - offset, 8.7 * 64);
+            door.setPosition(11* 64 - offset, 8.7 * 64);
             door.setTexture(dooropen);
             window.draw(door);
             sleep(seconds(2));
@@ -858,7 +828,7 @@ class BossLevel :public Levels {
         }
         else
         {
-            door.setPosition(62 * 64 - offset, 8.7 * 64);
+            door.setPosition(11 * 64 - offset, 8.7 * 64);
             door.setTexture(doorclosed);
             window.draw(door);
         }
@@ -867,7 +837,7 @@ class BossLevel :public Levels {
 };
 
 class LevelManager {
-    const int MAXLEVELS = 4;
+    const int MAXLEVELS = 3;
     Levels** levels = new Levels * [MAXLEVELS];
     int currentLevel;
     Timer timer;
@@ -875,7 +845,7 @@ class LevelManager {
 
     void loadLevels() 
     {
-        levels[0] = new BossLevel(timer);
+        levels[0] = new Level1(timer);
         levels[1] = new Level2(timer); 
         levels[2] = new Level3(timer); 
         levels[3] = new BossLevel(timer);
@@ -894,6 +864,7 @@ public:
                 levels[i] = nullptr;
             }
         }
+        delete levels;
     }
     bool runCurrentLevel(RenderWindow& window) 
     {
@@ -978,5 +949,16 @@ public:
         return scores;
     }
 };
+int main()
+{
+    RenderWindow window(VideoMode(1200, 896), "Sonic Classic Heroes");
+    Timer timer(120.0f);
+    window.setFramerateLimit(60);
+    Level1 level1(timer);
+
+    level1.run(window); // Launch full game loop from Level1
+
+    return 0;
+}
 
 

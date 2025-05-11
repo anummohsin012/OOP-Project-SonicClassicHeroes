@@ -464,84 +464,104 @@ public:
        
         //to stretch the background to the size of the window required
     }
-virtual void setObstaclesandCollectibles() override {
-    // Top and bottom boundary walls
-    for (int i = 0; i < 200; i++) {
-        lvl[0][i] = 'w';
-        lvl[1][i] = 'w';
-        lvl[12][i] = 'w';
-        lvl[13][i] = 'w';
-    }
-    for (int i = 1;i < 3;i++)
+    virtual void setObstaclesandCollectibles() override
     {
-        lvl[0][i] = ' ';
-        lvl[1][i] = ' ';
-    }
-
-    // --- TAILS REGION (spike floor, open sky above) ---
-    for (int col = 10; col < 30; col++) {
-        lvl[11][col] = 's'; // Spikes on ground
-    }
-    factory.spawn(new SpecialAbility(10, 8, lvl)); // Power-up before region
-    addEnemy(1, 15 * cell_size, 11 * cell_size);
-    addEnemy(1, 25 * cell_size, 11 * cell_size);
-
-    // --- KNUCKLES REGION (breakable walls) ---
-    factory.spawn(new SpecialAbility(10, 40, lvl));
-    for (int col = 45; col < 65; col += 2) {
-        lvl[10][col] = 'v';
-        if (col % 4 == 1) {
-            factory.spawn(new Rings(9, col, lvl)); rings++;
+        for (int i = 0; i < 200; i++)
+        {
+            lvl[0][i] = 'w';
+            lvl[1][i] = 'w';
+            lvl[12][i] = 'w';
+            lvl[13][i] = 'w';
         }
-    }
-    addEnemy(2, 50 * cell_size, 4 * cell_size);
-    factory.spawn(new ExtraLives(10, 63, lvl));
 
-    // --- SONIC REGION (smooth ring path) ---
-    factory.spawn(new SpecialAbility(10, 75, lvl)); // Optional
-    for (int col = 80; col < 120; col++) {
-        if (col % 4 == 0) {
-            factory.spawn(new Rings(10, col, lvl));
+        for (int i = 1; i < 3; i++)
+        {
+            lvl[0][i] = ' ';
+            lvl[1][i] = ' ';
+        }
+
+        for (int col = 5; col < 65; col++)
+        {
+            lvl[11][col] = ' ';
+            if (col % 5 == 0)
+            {
+                factory.spawn(new Rings(10, col, lvl));
+                rings++;
+            }
+        }
+
+        for (int col = 10; col < 60; col += 15)
+        {
+            for (int w = 0; w < 4; w++)
+            {
+                lvl[8][col + w] = 'w';
+            }
+            factory.spawn(new Rings(7, col, lvl));
             rings++;
         }
-        lvl[11][col] = ' '; // Smooth floor
-    }
-    addEnemy(0, 90 * cell_size, 11 * cell_size);
-    addEnemy(3, 115 * cell_size, 4 * cell_size);
-    factory.spawn(new ExtraLives(10, 110, lvl));
 
-    // --- PITS in accessible areas ---
-    lvl[12][35] = 'p';
-    lvl[12][70] = 'p';
-    lvl[12][125] = 'p';
-    lvl[13][35] = 'p';
-    lvl[13][70] = 'p';
-    lvl[13][125] = 'p';
+        factory.spawn(new SpecialAbility(10, 62, lvl));
+        addEnemy(0, 30 * cell_size, 11 * cell_size);
 
-    // --- MAZE WALLS: vertical and stepping blocks ---
-    for (int col = 0; col < 180; col += 15) {
-        for (int row = 5; row < 10; row++) {
-            if (col < 10 || col > 30)  // Leave Tails' region open
-                lvl[row][col] = 'w';   // Vertical wall divider
+        for (int col = 70; col < 130; col++)
+        {
+            lvl[11][col] = ' ';
+            if (col % 10 == 0)
+            {
+                factory.spawn(new Rings(6, col, lvl));
+                rings++;
+            }
         }
-        // Add stepping platforms inside each segment
-        if (col + 5 < 180) lvl[9][col + 5] = 'w';
-        if (col + 7 < 180) lvl[8][col + 7] = 'w';
-        if (col + 9 < 180) lvl[7][col + 9] = 'w';
+
+        for (int col = 75; col < 125; col += 12)
+        {
+            for (int w = 0; w < 5; w++)
+            {
+                lvl[7][col + w] = 'w';
+            }
+            if (col % 2 == 1)
+            {
+                factory.spawn(new Rings(6, col, lvl));
+                rings++;
+            }
+        }
+
+        factory.spawn(new SpecialAbility(10, 67, lvl));
+        addEnemy(1, 105 * cell_size, 11 * cell_size);
+
+        for (int col = 135; col < 185; col++)
+        {
+            lvl[11][col] = ' ';
+            if (col % 6 == 0)
+            {
+                lvl[10][col] = 'v';
+            }
+            if (col % 8 == 0)
+            {
+                factory.spawn(new Rings(9, col, lvl));
+                rings++;
+            }
+        }
+
+        for (int col = 140; col < 180; col += 13)
+        {
+            for (int w = 0; w < 5; w++)
+            {
+                lvl[8][col + w] = 'w';
+            }
+            if (col % 3 == 0)
+            {
+                factory.spawn(new Rings(8, col, lvl));
+                rings++;
+            }
+        }
+
+        factory.spawn(new SpecialAbility(10, 132, lvl));
+        addEnemy(2, 165 * cell_size, 4 * cell_size);
+
+        factory.spawn(new ExtraLives(10, 80, lvl));
+        factory.spawn(new ExtraLives(10, 180, lvl));
     }
-
-    // --- Extra collectibles ---
-    factory.spawn(new Rings(5, 100, lvl)); rings++;
-    factory.spawn(new Rings(6, 52, lvl)); rings++;
-    factory.spawn(new Rings(7, 60, lvl)); rings++;
-    factory.spawn(new ExtraLives(4, 130, lvl));
-    factory.spawn(new SpecialAbility(6, 160, lvl));
-
-    // --- Additional Enemies at correct height ---
-    addEnemy(0, 60 * cell_size, 11 * cell_size);
-    addEnemy(2, 125 * cell_size, 4 * cell_size);
-    addEnemy(3, 150 * cell_size, 4 * cell_size);
-}
 
 
     virtual void trigger(RenderWindow& window, float offset = 0) override
@@ -576,57 +596,94 @@ public:
     }
     virtual void setObstaclesandCollectibles() override
     {
-        //basic level layout
-        for (int i = 0;i < width;i++) //originally setting wall on the whole ground
-        {
-            lvl[12][i] = 'w';
-            lvl[13][i] = 'w';
-        }
-        lvl[0][0] = 'w';
-        lvl[1][0] = 'w';
-
-        for (int i = 3;i < width;i++) //originally setting wall on the whole ground
+        for (int i = 0; i < 250; i++)
         {
             lvl[0][i] = 'w';
             lvl[1][i] = 'w';
+            lvl[12][i] = 'w';
+            lvl[13][i] = 'w';
+        }
+        for (int i = 1; i < 3; i++)
+        {
+            lvl[0][i] = ' ';
+            lvl[1][i] = ' ';
         }
 
+        for (int col = 10; col < 40; col++)
+        {
+            lvl[11][col] = 's';
+        }
+        factory.spawn(new SpecialAbility(10, 8, lvl));
+        addEnemy(1, 18 * cell_size, 11 * cell_size);
+        addEnemy(1, 34 * cell_size, 11 * cell_size);
 
-        factory.spawn(new Rings(10, 8, lvl));
-        rings++;
-        for (int i = 10;i < 14;i++)
+        factory.spawn(new SpecialAbility(10, 50, lvl));
+        for (int col = 60; col < 90; col += 2)
         {
-            lvl[10][i] = 'w';
+            lvl[10][col] = 'v';
+            if (col % 4 == 1)
+            {
+                factory.spawn(new Rings(9, col, lvl));
+                rings++;
+            }
         }
-        for (int i = 14;i < 22;i++)
-        {
-            lvl[8][i] = 'w';
-        }
-        for (int i = 22;i < 42;i % 2 == 0 ? i += 1 : i += 2)
-        {
-            lvl[6][i] = 'w';
-        }
-        for (int i = 44;i < 54;i += 1)
-        {
-            lvl[5][i] = 'w';
-        }
-        for (int i = 54;i < 64;i += 2)
-        {
-            lvl[5][i] = 'w';
-        }
-        factory.spawn(new SpecialAbility(11, 22, lvl));
+        addEnemy(2, 75 * cell_size, 4 * cell_size);
+        factory.spawn(new ExtraLives(10, 88, lvl));
 
-        lvl[11][24] = 'v';
-        lvl[11][30] = 'v';
-        lvl[11][38] = 'v';
-
-
-        for (int i = 48;i < 50;i += 1)
+        factory.spawn(new SpecialAbility(10, 100, lvl));
+        for (int col = 110; col < 180; col++)
         {
-            lvl[12][i] = 'p';
-            lvl[13][i] = 'p';
+            if (col % 4 == 0)
+            {
+                factory.spawn(new Rings(10, col, lvl));
+                rings++;
+            }
+            lvl[11][col] = ' ';
+        }
+        addEnemy(0, 130 * cell_size, 11 * cell_size);
+        addEnemy(3, 175 * cell_size, 4 * cell_size);
+        factory.spawn(new ExtraLives(10, 160, lvl));
+
+        lvl[12][50] = 'p';
+        lvl[13][50] = 'p';
+        lvl[12][100] = 'p';
+        lvl[13][100] = 'p';
+        lvl[12][200] = 'p';
+        lvl[13][200] = 'p';
+
+        for (int col = 0; col < 236; col += 20)
+        {
+            for (int row = 5; row < 10; row++)
+            {
+                if (col < 10 || col > 40)
+                {
+                    lvl[row][col] = 'w';
+                }
+            }
+
+            if (col + 5 < 236)
+            {
+                lvl[9][col + 5] = 'w';
+            }
+            if (col + 7 < 236)
+            {
+                lvl[8][col + 7] = 'w';
+            }
+            if (col + 9 < 236)
+            {
+                lvl[7][col + 9] = 'w';
+            }
         }
 
+        factory.spawn(new Rings(5, 120, lvl)); rings++;
+        factory.spawn(new Rings(6, 62, lvl));  rings++;
+        factory.spawn(new Rings(7, 80, lvl));  rings++;
+        factory.spawn(new ExtraLives(4, 190, lvl));
+        factory.spawn(new SpecialAbility(6, 220, lvl));
+
+        addEnemy(0, 40 * cell_size, 11 * cell_size);
+        addEnemy(2, 190 * cell_size, 4 * cell_size);
+        addEnemy(3, 230 * cell_size, 4 * cell_size);
     }
     virtual void trigger(RenderWindow& window, float offset = 0) override
     {
@@ -651,7 +708,7 @@ public:
 
 class Level3 :public Levels {
 public:
-    Level3(Timer& timer) :Levels(14, 300, 25, 1, 0.3, 0.5,120.0f, timer)
+    Level3(Timer& timer) :Levels(14, 300, 25, 1, 0.4, 0.5,120.0f, timer)
     {
         levelIntroText.setString("LEVEL 3");
 
@@ -663,67 +720,119 @@ public:
     }
     virtual void setObstaclesandCollectibles() override
     {
-        //basic level layout
-        for (int i = 0;i < width;i++) //originally setting wall on the whole ground
-        {
-            lvl[12][i] = 'w';
-            lvl[13][i] = 'w';
-        }
-        lvl[0][0] = 'w';
-        lvl[1][0] = 'w';
-
-        for (int i = 3;i < width;i++) //originally setting wall on the whole ground
+        for (int i = 0; i < 300; i++)
         {
             lvl[0][i] = 'w';
             lvl[1][i] = 'w';
-        }
-
-        for (int i = 0;i < 200;i++) //originally setting wall on the whole ground
-        {
             lvl[12][i] = 'w';
             lvl[13][i] = 'w';
         }
 
-        factory.spawn(new Rings(10, 8, lvl));
-        rings++;
-        for (int i = 10;i < 14;i++)
+        for (int i = 1; i < 3; i++)
         {
-            lvl[10][i] = 'w';
-        }
-        for (int i = 14;i < 22;i++)
-        {
-            lvl[8][i] = 'w';
-        }
-        for (int i = 22;i < 42;i % 2 == 0 ? i += 1 : i += 2)
-        {
-            lvl[6][i] = 'w';
-        }
-        for (int i = 44;i < 54;i += 1)
-        {
-            lvl[5][i] = 'w';
-        }
-        for (int i = 54;i < 64;i += 2)
-        {
-            lvl[5][i] = 'w';
-        }
-        factory.spawn(new SpecialAbility(11, 22, lvl));
-
-        lvl[11][24] = 'v';
-        lvl[11][30] = 'v';
-        lvl[11][38] = 'v';
-
-
-        for (int i = 48;i < 50;i += 1)
-        {
-            lvl[12][i] = 'p';
-            lvl[13][i] = 'p';
+            lvl[0][i] = ' ';
+            lvl[1][i] = ' ';
         }
 
+        for (int col = 20; col < 100; col += 10)
+        {
+            lvl[10][col] = 'w';
+            factory.spawn(new Rings(9, col, lvl));
+            rings++;
+        }
 
+        for (int col = 40; col < 120; col += 12)
+        {
+            lvl[7][col] = 'w';
+            factory.spawn(new Rings(6, col, lvl));
+            rings++;
+        }
 
+        factory.spawn(new SpecialAbility(10, 120, lvl));
+
+        addEnemy(1, 50 * cell_size, 4 * cell_size);
+
+        for (int col = 120; col < 160; col++)
+        {
+            if ((col / 5) % 2 == 0)
+            {
+                lvl[12][col] = 's';
+                lvl[13][col] = 's';
+            }
+            else
+            {
+                lvl[12][col] = 'p';
+                lvl[13][col] = 'p';
+            }
+        }
+
+        for (int col = 140; col < 200; col += 15)
+        {
+            lvl[10][col] = 'w';
+            factory.spawn(new ExtraLives(9, col, lvl));
+        }
+
+        for (int col = 170; col < 230; col += 20)
+        {
+            lvl[9][col] = 'w';
+            factory.spawn(new Rings(8, col, lvl));
+            rings++;
+        }
+
+        addEnemy(1, 225 * cell_size, 11 * cell_size);
+        addEnemy(3, 230 * cell_size, 4 * cell_size);
+
+        for (int col = 200; col < 250; col += 15)
+        {
+            lvl[7][col] = 'w';
+            lvl[6][col] = 'w';
+            factory.spawn(new Rings(5, col, lvl));
+            rings++;
+        }
+
+        addEnemy(3, 265 * cell_size, 4 * cell_size);
+
+        for (int col = 260; col < 285; col++)
+        {
+            lvl[5][col] = 'w';
+            factory.spawn(new Rings(4, col, lvl));
+            rings++;
+        }
+
+        for (int col = 270; col < 300; col++)
+        {
+            lvl[4][col] = 'v';
+        }
+
+        addEnemy(0, 270 * cell_size, 11 * cell_size);
+        addEnemy(2, 240 * cell_size, 4 * cell_size);
+
+        factory.spawn(new SpecialAbility(10, 180, lvl));
+        factory.spawn(new ExtraLives(10, 100, lvl));
+        factory.spawn(new ExtraLives(10, 250, lvl));
+        factory.spawn(new ExtraLives(10, 280, lvl));
     }
+
+
+
     virtual void trigger(RenderWindow& window, float offset = 0) override
     {
+        door.setScale(2.5f, 2.5f);
+        if (manager.getLeader()->getXposition() >= 290 * 64.f && manager.getLeader()->getXposition() <= 293 * 64.f && manager.getLeader()->getYPosition() <= 12 * 64 && manager.getLeader()->getYPosition() >= 10 * 64 && ringscollected == rings)
+        {
+            door.setPosition(291 * 64 - offset, 8.7 * 64);
+            door.setTexture(dooropen);
+            window.draw(door);
+            sleep(seconds(2));
+            lvlFinished = true;
+        }
+        else
+        {
+            door.setPosition(291 * 64 - offset, 8.7 * 64);
+            door.setTexture(doorclosed);
+            window.draw(door);
+        }
+    
     }
 };
 class BossLevel :public Levels {
@@ -764,8 +873,9 @@ class BossLevel :public Levels {
 
 
     }
-    bool run(RenderWindow& window) override {
-        float scrollOffsetX = 0.0f; // No scrolling - always 0
+    bool run(RenderWindow& window) override 
+    {
+        float scrollOffsetX = 0.0f;
         Event ev;
 
         if (manager.isGameOver())
@@ -934,6 +1044,18 @@ public:
         return scores;
     }
 };
+
+int main()
+{
+    RenderWindow window(VideoMode(1200, 896), "Sonic Classic Heroes");
+    Timer timer(120.0f);
+    window.setFramerateLimit(60);
+    Level3 Bosslevel(timer);
+
+    Bosslevel.run(window); 
+
+    return 0;
+}
 
 
 

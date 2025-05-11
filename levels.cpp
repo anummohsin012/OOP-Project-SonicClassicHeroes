@@ -60,9 +60,11 @@ public:
             lvl[i] = new char[width];
             for (int j = 0; j < width; j ++) 
             {
-                lvl[i][j] = ' '; // Initialize all cells to empty
+                lvl[i][j] = ' '; // all cells empty
             }
         }
+
+        //lvl backgrounds
         if (!lvlTex1.loadFromFile("Data/bglvl1.png"))
         {
             return;
@@ -86,10 +88,11 @@ public:
         }
         
 
-
+        //wall
         wall.loadFromFile("Data/brick1.png");
         wallSprite.setTexture(wall);
 
+        //breakable wall
         wall2.loadFromFile("Data/brick2.png");
         wall2Sprite.setTexture(wall2);
 
@@ -101,18 +104,19 @@ public:
             cout << "Font didnt load\n";
         }
 
-        // Setup lives text
+        // lives text
         livesText.setFont(font);
         livesText.setCharacterSize(24);
         livesText.setFillColor(Color::White);
         livesText.setPosition(20, 20); // Top-left corner
 
-        // Setup rings text
+        // rings text
         ringsText.setFont(font);
         ringsText.setCharacterSize(24);
         ringsText.setFillColor(Color::White);
         ringsText.setPosition(20, 50); // Below lives text
 
+        // timer text
         timerText.setFont(font);
         timerText.setCharacterSize(30);
         timerText.setFillColor(Color::White);
@@ -120,21 +124,24 @@ public:
 
         lvltimer->start();
 
+        //trigger door
         dooropen.loadFromFile("Data/dooropen.png");
         doorclosed.loadFromFile("Data/closeddoor.png");
 
+        //scores text
         scoreText.setFont(font);
         scoreText.setCharacterSize(24);
         scoreText.setFillColor(Color::White);
         scoreText.setPosition(20, 80); 
 
+        //temporary text displaying whih level we're at
         levelIntroText.setFont(font);
         levelIntroText.setCharacterSize(72);
         levelIntroText.setFillColor(Color::Yellow);
         levelIntroText.setStyle(Text::Bold);
         levelIntroText.setString("LEVEL ?");
 
-        levelIntroText.setPosition(500, 200); // Center of 1200x896 window
+        levelIntroText.setPosition(500, 200); 
 
         levelIntroClock.restart();
 
@@ -154,11 +161,7 @@ public:
         float remaining = lvltimer->getRemainingTime();
         int minutes = static_cast<int>(remaining) / 60;
         int seconds = static_cast<int>(remaining) % 60;
-        timerText.setString(
-            "TIME: " +
-            to_string(minutes) + ":" +
-            (seconds < 10 ? "0" : "") + to_string(seconds)
-        );
+        timerText.setString("TIME: " + to_string(minutes) + ":" +(seconds < 10 ? "0" : "") + to_string(seconds) );
     }
 
     void drawTimer(RenderWindow& window) 
@@ -221,8 +224,8 @@ public:
                 else
                     manager.getLeader()->useSpecialAbility();
 
-                c->collect(lvl); 
-                factory.removeCollectible(i);
+                c->collect(lvl); //removes the letter and plays the sound
+                factory.removeCollectible(i); //deletes the object
             }
             else 
             {
@@ -290,7 +293,7 @@ public:
                     if (!player->isInvincible()&& px_r > sx_l&& px_l < sx_r&& py_b> sy_t&& py_t < sy_b )
                     {
                         manager.removeLife();
-                        player->setVelocityY(-10.f);
+                        player->setVelocityY(-10.f); //jumps a little
                         return;
                     }
 
@@ -311,13 +314,12 @@ public:
         collisionsWithSpikes(manager.getLeader());
         manager.checkPits();
         int enemiesKilled=Enemy::checkcollision(manager, enemies, enemyCount);
-        score += enemiesKilled * 50; //killing one enemy gives 50 points
+        score += enemiesKilled * 100; //killing one enemy gives 50 points
         //followers
-        manager.updateFollowers();
+        manager.updateFollowers(); //the ai following logic
     }
     void addEnemy(int type, float x, float y) {
         if (enemyCount >= enemyCapacity) {
-            // Resize array
             enemyCapacity *= 2;
             Enemy** newEnemies = new Enemy * [enemyCapacity];
             for (int i = 0; i < enemyCount; ++i)
@@ -342,8 +344,8 @@ public:
         }
     }
 
-    void render(RenderWindow& window, float scrollOffsetX) {
-        lvlSprite.setPosition(-scrollOffsetX, 0);
+    void render(RenderWindow& window, float scrollOffsetX) { //this function takes care of all the drawing functionalities
+        lvlSprite.setPosition(-scrollOffsetX, 0); //scroll offset x is used to horizontally scroll based on the leaders [ositon 
         window.draw(lvlSprite);
         trigger(window, scrollOffsetX);
 
@@ -371,7 +373,7 @@ public:
         drawEnemies(window, scrollOffsetX);
         drawTimer(window);
 
-        if (showLevelIntro) 
+        if (showLevelIntro)  //temporarily shows the level number then disappears
         {
             window.draw(levelIntroText);
 
@@ -380,8 +382,8 @@ public:
             }
         }
     }
-    virtual bool run(RenderWindow& window) {
-        float scrollOffsetX = 0.0f;
+    virtual bool run(RenderWindow& window) { //ths is the primary function that starts the level and runs it
+        float scrollOffsetX = 0.0f; //starting with no scroll until leader reaches a posiotn
         Event ev;
 
         if (manager.isGameOver())
@@ -401,7 +403,7 @@ public:
             }
 
             if (manager.isGameOver() || isTimeUp()) {
-                return false; // Level failed
+                return false; //level failed
             }
 
             if (lvlFinished) {
@@ -414,17 +416,14 @@ public:
 
             // scrolling
             float leaderX = manager.getLeader()->getXposition();
-            scrollOffsetX = leaderX - 640;
-            if (scrollOffsetX < 0)  //meaning when we havent scrolled at all
+            scrollOffsetX = leaderX - 640; //allows the screen to scroll as leader moves
+            if (scrollOffsetX < 0)  //meaning when we havent scrolled at all 
                 scrollOffsetX = 0;
-            float maxScrollX = (width * cell_size) - 1280; //1280 = window width
+            float maxScrollX = (width * cell_size) - 1200; //as window is max 1200
             if (scrollOffsetX > maxScrollX)
                 scrollOffsetX = maxScrollX;
 
 
-
-
-            //render
             window.clear(Color::Black);
             render(window, scrollOffsetX);
             window.display();
@@ -453,19 +452,21 @@ public:
 
 class Level1 :public Levels {
 public:
-    Level1(Timer& timer):Levels(14,200,5,1,0.8,1,90.0f,timer)
+    Level1(Timer& timer):Levels(14,200,5,1,0.8,1,90.0f,timer)  
     { 
         levelIntroText.setString("LEVEL 1");
 
         lvlSprite.setTexture(lvlTex1);
         lvlSprite.setScale(2.f, 3.f);
+        //to fit the background to the size of the window required
         lvlSprite.setTextureRect(IntRect(0, 0, width * 64, height * 64));
         setObstaclesandCollectibles();
        
-        //to stretch the background to the size of the window required
+       
     }
     virtual void setObstaclesandCollectibles() override
     {
+        //boundary
         for (int i = 0; i < 200; i++)
         {
             lvl[0][i] = 'w';
@@ -482,7 +483,6 @@ public:
 
         for (int col = 5; col < 65; col++)
         {
-            lvl[11][col] = ' ';
             if (col % 5 == 0)
             {
                 factory.spawn(new Rings(10, col, lvl));
@@ -494,18 +494,19 @@ public:
         {
             for (int w = 0; w < 4; w++)
             {
-                lvl[8][col + w] = 'w';
+                lvl[8][col + w] = 'w'; 
             }
             factory.spawn(new Rings(7, col, lvl));
             rings++;
         }
 
+
+        //tails region
         factory.spawn(new SpecialAbility(10, 62, lvl));
         addEnemy(0, 30 * cell_size, 11 * cell_size);
 
         for (int col = 70; col < 130; col++)
         {
-            lvl[11][col] = ' ';
             if (col % 10 == 0)
             {
                 factory.spawn(new Rings(6, col, lvl));
@@ -526,6 +527,7 @@ public:
             }
         }
 
+        //knuckles area
         factory.spawn(new SpecialAbility(10, 67, lvl));
         addEnemy(1, 105 * cell_size, 11 * cell_size);
 
@@ -543,6 +545,9 @@ public:
             }
         }
 
+        //sonic 
+        factory.spawn(new SpecialAbility(10, 132, lvl));
+
         for (int col = 140; col < 180; col += 13)
         {
             for (int w = 0; w < 5; w++)
@@ -556,7 +561,7 @@ public:
             }
         }
 
-        factory.spawn(new SpecialAbility(10, 132, lvl));
+     
         addEnemy(2, 165 * cell_size, 4 * cell_size);
 
         factory.spawn(new ExtraLives(10, 80, lvl));
@@ -569,6 +574,7 @@ public:
         door.setScale(2.5f, 2.5f);
         if (manager.getLeader()->getXposition() >= 190 * 64.f && manager.getLeader()->getXposition() <= 193 * 64.f && manager.getLeader()->getYPosition() <= 12 * 64 && manager.getLeader()->getYPosition() >= 10 * 64 && ringscollected == rings)
         {
+            //if door reached, and all rings collected the door will open and allow for the next level to start
             door.setPosition(191 * 64-offset, 8.7 * 64);
             door.setTexture(dooropen);
             window.draw(door);
@@ -609,14 +615,18 @@ public:
             lvl[1][i] = ' ';
         }
 
+        //tails region
+        factory.spawn(new SpecialAbility(10, 8, lvl));
         for (int col = 10; col < 40; col++)
         {
             lvl[11][col] = 's';
         }
-        factory.spawn(new SpecialAbility(10, 8, lvl));
+        
         addEnemy(1, 18 * cell_size, 11 * cell_size);
         addEnemy(1, 34 * cell_size, 11 * cell_size);
 
+
+        //kunckles
         factory.spawn(new SpecialAbility(10, 50, lvl));
         for (int col = 60; col < 90; col += 2)
         {
@@ -630,6 +640,7 @@ public:
         addEnemy(2, 75 * cell_size, 4 * cell_size);
         factory.spawn(new ExtraLives(10, 88, lvl));
 
+        //sonic
         factory.spawn(new SpecialAbility(10, 100, lvl));
         for (int col = 110; col < 180; col++)
         {
@@ -638,12 +649,12 @@ public:
                 factory.spawn(new Rings(10, col, lvl));
                 rings++;
             }
-            lvl[11][col] = ' ';
         }
         addEnemy(0, 130 * cell_size, 11 * cell_size);
         addEnemy(3, 175 * cell_size, 4 * cell_size);
         factory.spawn(new ExtraLives(10, 160, lvl));
-
+         
+        //pits
         lvl[12][50] = 'p';
         lvl[13][50] = 'p';
         lvl[12][100] = 'p';
@@ -748,6 +759,7 @@ public:
             rings++;
         }
 
+        //tails
         factory.spawn(new SpecialAbility(10, 120, lvl));
 
         addEnemy(1, 50 * cell_size, 4 * cell_size);
@@ -765,7 +777,8 @@ public:
                 lvl[13][col] = 'p';
             }
         }
-
+        //sonic
+        factory.spawn(new SpecialAbility(10, 180, lvl));
         for (int col = 140; col < 200; col += 15)
         {
             lvl[10][col] = 'w';
@@ -779,6 +792,7 @@ public:
             rings++;
         }
 
+
         addEnemy(1, 225 * cell_size, 11 * cell_size);
         addEnemy(3, 230 * cell_size, 4 * cell_size);
 
@@ -789,6 +803,8 @@ public:
             factory.spawn(new Rings(5, col, lvl));
             rings++;
         }
+        //knuckles
+        factory.spawn(new SpecialAbility(10, 240, lvl));
 
         addEnemy(3, 265 * cell_size, 4 * cell_size);
 
@@ -802,7 +818,7 @@ public:
         addEnemy(0, 270 * cell_size, 11 * cell_size);
         addEnemy(2, 240 * cell_size, 4 * cell_size);
 
-        factory.spawn(new SpecialAbility(10, 180, lvl));
+        
         factory.spawn(new ExtraLives(10, 100, lvl));
         factory.spawn(new ExtraLives(10, 250, lvl));
         factory.spawn(new ExtraLives(10, 280, lvl));
@@ -852,16 +868,10 @@ class BossLevel :public Levels {
         lvl[0][0] = 'w';
         lvl[1][0] = 'w';
 
-        for (int i = 3;i < width;i++) //originally setting wall on the whole ground
+        for (int i = 3;i < width;i++) 
         {
             lvl[0][i] = 'w';
             lvl[1][i] = 'w';
-        }
-
-        for (int i = 0;i <width;i++) //originally setting wall on the whole ground
-        {
-            lvl[12][i] = 'w';
-            lvl[13][i] = 'w';
         }
 
         addEnemy(4, 4 * cell_size, 3 * cell_size);
@@ -870,7 +880,7 @@ class BossLevel :public Levels {
     }
     bool run(RenderWindow& window) override 
     {
-        float scrollOffsetX = 0.0f;
+        float scrollOffsetX = 0.0f; //we dont want any offset so samr run without offset
         Event ev;
 
         if (manager.isGameOver())
@@ -897,8 +907,6 @@ class BossLevel :public Levels {
             playersInputs();
             physics();
             updateEnemies(manager.getLeader(), lvl, cell_size);
-
-            // Render with fixed scrollOffsetX (0)
             window.clear(Color::Black);
             render(window, 0.0);
             window.display();
@@ -968,11 +976,11 @@ public:
 
         if (levelCompleted) 
         {
-            sleep(seconds(2)); // Brief pause to see completion
+            sleep(seconds(2)); //pause
             return true;
         }
         else {
-            // Game over occurred
+            //game lost
             showGameIsOver(window);
             return false;
         }
@@ -1022,7 +1030,7 @@ public:
         {
             currentLevel++;
             levels[currentLevel]->resetLevelIntro();
-            timer.setDura(levels[currentLevel]->getLevelTime()); // Add this method to Levels
+            timer.setDura(levels[currentLevel]->getLevelTime()); 
             timer.start();
         }
     }

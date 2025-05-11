@@ -6,8 +6,8 @@
 using namespace sf;
 using namespace std;
 
-class Collectibles {
-protected:
+class Collectibles { //parent class
+protected: 
 	Texture texture;
 	Sprite sprite;
 	int row, column;
@@ -136,7 +136,7 @@ public:
 
 class CollectibleFactory {
 	int size;
-	Collectibles** collectibles;
+	Collectibles** collectibles; //composing the collectible objects because it creates collectibles
 	int current;
 public:
 	CollectibleFactory(int size = 3) :size(size), collectibles(new Collectibles* [size]),current(0)
@@ -193,20 +193,17 @@ public:
 		return current; 
 	}
 
-
-
-	void removeCollectible(int index) {
+	void removeCollectible(int index) 
+	{
 		if (index < 0 || index >= current) return;
-
-		// Delete the object
 		delete collectibles[index];
 
-		// Shift remaining elements to fill the gap
-		for (int i = index; i < current - 1; i++) {
+		for (int i = index; i < current - 1; i++) 
+		{
 			collectibles[i] = collectibles[i + 1];
 		}
 
-		// Set the last position to nullptr and decrease count
+		//set the last position to nullptr and decreased count
 		collectibles[current - 1] = nullptr;
 		current--;
 	}

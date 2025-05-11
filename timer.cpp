@@ -12,18 +12,20 @@ public:
         clock.restart();
         working = true;
     }
-    void stop() {
-        working = false;
-    }
     void setDura(float time) {
         duration = time;
+    }
+    void stop() {
+        working = false;
     }
     bool timeup() const {
         return working && clock.getElapsedTime().asSeconds() >= duration;
     }
     float getRemainingTime() const {
         float remaining = duration - clock.getElapsedTime().asSeconds();
-        if (remaining < 0.f) remaining = 0.f;
+        if (remaining < 0.f) {
+            remaining = 0.f;
+        }
         return remaining;
     }
 

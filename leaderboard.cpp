@@ -1,27 +1,25 @@
 #include <SFML/Graphics.hpp>
 #include <fstream>
 #include <string>
+using namespace sf;
+using namespace std;
 
 class Leaderboard {
 private:
-    static const int MAX_SCORES = 10;
-    std::string names[MAX_SCORES];
-    int scores[MAX_SCORES];
-    int scoreCount;
-    sf::Font font;
+    static const int max= 10;
+    string names[max];
+    int scores[max];
+    int count;
+    Font font;
 
     void sortScores() {
-        // Bubble sort without using swap
-        for (int i = 0; i < scoreCount - 1; i++) {
-            for (int j = 0; j < scoreCount - i - 1; j++) {
+        for (int i = 0; i < count - 1; i++) {
+            for (int j = 0; j < count - i - 1; j++) {
                 if (scores[j] < scores[j + 1]) {
-                    // Manual swap for scores
                     int tempScore = scores[j];
                     scores[j] = scores[j + 1];
                     scores[j + 1] = tempScore;
-
-                    // Manual swap for names
-                    std::string tempName = names[j];
+                    string tempName = names[j];
                     names[j] = names[j + 1];
                     names[j + 1] = tempName;
                 }
@@ -30,29 +28,25 @@ private:
     }
 
 public:
-    Leaderboard() : scoreCount(0) {
+    Leaderboard() : count(0) {
         if (!font.loadFromFile("font/arial.ttf")) {
-            // Error handling
         }
         loadScores();
     }
 
     void addScore(const std::string& name, int score) {
-        if (scoreCount < MAX_SCORES) {
-            names[scoreCount] = name;
-            scores[scoreCount] = score;
-            scoreCount++;
+        if (count <max) {
+            names[count] = name;
+            scores[count] = score;
+            count++;
         }
         else {
-            // Find the lowest score
             int minIndex = 0;
-            for (int i = 1; i < MAX_SCORES; i++) {
+            for (int i = 1; i < max; i++) {
                 if (scores[i] < scores[minIndex]) {
                     minIndex = i;
                 }
             }
-
-            // Replace if new score is higher
             if (score > scores[minIndex]) {
                 names[minIndex] = name;
                 scores[minIndex] = score;
@@ -63,10 +57,10 @@ public:
     }
 
     void loadScores() {
-        std::ifstream inFile("highscores.dat");
-        scoreCount = 0;
-        while (scoreCount < MAX_SCORES && inFile >> names[scoreCount] >> scores[scoreCount]) {
-            scoreCount++;
+        ifstream inFile("highscores.dat");
+        count = 0;
+        while (count < max && inFile >> names[count] >> scores[count]) {
+            count++;
         }
         inFile.close();
         sortScores();
@@ -74,14 +68,14 @@ public:
 
     void saveScores() {
         std::ofstream outFile("highscores.dat");
-        for (int i = 0; i < scoreCount; i++) {
+        for (int i = 0; i < count; i++) {
             outFile << names[i] << " " << scores[i] << "\n";
         }
         outFile.close();
     }
 
-    void draw(sf::RenderWindow& window) {
-        sf::Text text;
+    void draw(RenderWindow& window) {
+        Text text;
         text.setFont(font);
         text.setCharacterSize(40);
         text.setFillColor(sf::Color::White);
@@ -90,11 +84,9 @@ public:
         text.setString("TOP 10 HIGH SCORES");
         text.setPosition(350, 100);
         window.draw(text);
-
-        // Scores
         float y = 180;
-        for (int i = 0; i < scoreCount; i++) {
-            text.setString(std::to_string(i + 1) + ". " + names[i] + " - " + std::to_string(scores[i]));
+        for (int i = 0; i < count; i++) {
+            text.setString(to_string(i + 1) + ". " + names[i] + " - " + to_string(scores[i]));
             text.setPosition(350, y);
             window.draw(text);
             y += 50;

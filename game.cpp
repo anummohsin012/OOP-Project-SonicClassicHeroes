@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include "menu.cpp"
 #include "levels.cpp"
+#include "leaderboard.cpp"
 
 using namespace sf;
 using namespace std;
@@ -66,6 +67,7 @@ public:
             window.draw(texts[i]);
         }
     }
+    int getTotalScore() const { return total_score; }
 };
 
 class Game {
@@ -76,6 +78,7 @@ private:
     int gameState; //0 is menu 1 is game 3 is scoreboard
     string playerName;
     ScoreBoard scoreBoard;
+    Leaderboard leaderboard;
 
 public:
     Game() : window(VideoMode(1200, 896), "Sonic Classic Heroes"),menu(1200, 896),levelManager(), gameState(0), playerName("Player"),scoreBoard(window)
@@ -105,15 +108,18 @@ private:
                             menu.hower(1);
                         else if (event.key.code == Keyboard::Enter) {
                             int selected = menu.getindex();
-                            if (selected == 0) {
+                            if (selected == 0) { 
                                 menu.nameinput(window, 896, 1200);
                                 if (menu.getcanstart()) {
                                     playerName = menu.getPlayerName();
                                     scoreBoard.setname(playerName);
-                                    gameState = 1;
+                                    gameState = 1; 
                                 }
                             }
-                            else if (selected == 4) {
+                            else if (selected == 3) { 
+                                gameState = 3; 
+                            }
+                            else if (selected == 4) { 
                                 window.close();
                             }
                             else {
@@ -130,20 +136,14 @@ private:
                             menu.toggleing();
                     }
                 }
-                else if (gameState == 1) 
-                {
+                else if (gameState == 1 || gameState == 2 || gameState == 3) {
                     if (event.key.code == Keyboard::Escape) {
-                        gameState = 0;
+                        gameState = 0; 
                     }
-                    
-                }
-                else if (gameState == 2)
-                {
-                    if (event.key.code == Keyboard::Escape) {
+                    else if (gameState == 2 && event.key.code == Keyboard::Enter) {
                         gameState = 0;
                     }
                 }
-
             }
         }
     }
@@ -180,6 +180,7 @@ private:
     {
         scoreBoard.setname(playerName);
         scoreBoard.setscores(levelManager.getscore());
+        leaderboard.addScore(playerName, scoreBoard.getTotalScore());
     }
 
     void render() {
@@ -190,6 +191,9 @@ private:
         }
         else if (gameState == 2) {
             scoreBoard.display();
+        }
+        else if (gameState == 3) {
+            leaderboard.draw(window);
         }
 
         window.display();

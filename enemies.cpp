@@ -14,11 +14,13 @@ protected:
     Sprite sprite;
     int width, height;
    float hitboxl, hitboxt,hitboxr, hitboxb;
-   
+   Clock damageclock;
+   float damagecooldown;
+   bool damaged;
 
 public:
     Enemy(float x, float y, float spd, int health, int w, int h ,float hitboxL, float hitboxT, float hitboxR, float hitboxB)
-        : x(x), y(y), speed(spd), hp(health), alive(true), width(w), height(h), hitboxl(hitboxL), hitboxt(hitboxT), hitboxr(hitboxR), hitboxb(hitboxB) {
+        : x(x), y(y), speed(spd), hp(health), alive(true), width(w), height(h), hitboxl(hitboxL), hitboxt(hitboxT), hitboxr(hitboxR), hitboxb(hitboxB),damagecooldown(1.0f) {
        
     }
 
@@ -29,11 +31,17 @@ public:
             window.draw(sprite);
         }
     }
-    void takeDamage() {
-        hp -= 1;
-        if (hp <= 0) 
-            alive = false;
-    }
+        void takeDamage() {
+            if (damageclock.getElapsedTime().asSeconds() >= damagecooldown) {
+                hp -= 1;
+                damaged = true;
+                damageclock.restart();
+                if (hp <= 0) {
+                    alive = false;
+                }
+            }
+            cout << hp << endl;
+        }
     bool isAlive() const 
     {
         return alive;
@@ -51,32 +59,28 @@ public:
         return y + hitboxb; 
     }
     static int checkcollision(PlayerManager& manager, Enemy* enemies[], int enemyCount) {
-        float px = manager.getLeader()->getXposition();
-        float py = manager.getLeader()->getYPosition();
-        float pw = 40.f * 2.5f;
-        float ph = 40.f * 2.5f;
+        float plax = manager.getLeader()->getXposition();
+        float play = manager.getLeader()->getYPosition();
+        float plaw = 40.f * 2.5f;
+        float plah = 40.f * 2.5f;
         int kills = 0;
-
         static Music collisionmusic;
         collisionmusic.openFromFile("Data/collision.ogg");
         collisionmusic.setVolume(60);
-        
-
+     
         for (int i = 0; i < enemyCount; i++) {
             if (enemies[i] && enemies[i]->isAlive()) 
             {
-                float ex1 = enemies[i]->getLeft();
-                float ex2 = enemies[i]->getRight();
-                float ey1 = enemies[i]->getTop();
-                float ey2 = enemies[i]->getBottom();
+                float enemeyl = enemies[i]->getLeft();
+                float enemeyr = enemies[i]->getRight();
+                float enemeyt = enemies[i]->getTop();
+                float enemeyb = enemies[i]->getBottom();
 
-                if (px < ex2 && px + pw > ex1 && py < ey2 && py + ph > ey1) 
+                if (plax < enemeyr && plax + plaw > enemeyl && play < enemeyb && play + plah > enemeyt) 
                 {
-                    
                     collisionmusic.play();
                     if (!manager.getLeader()->isInvincible() &&  manager.getLeader()->getonground()) {
-                        manager.removeLife();
-                    }
+                        manager.removeLife(); }
                     else {
                         bool wasAlive = enemies[i]->isAlive();
                         enemies[i]->takeDamage();
@@ -88,12 +92,9 @@ public:
         }
         return kills;
         
-    }
-    
+    } 
     virtual ~Enemy() {}
 };
-
-
 class Projectile {
 private:
     float x, y;
@@ -131,18 +132,12 @@ public:
 class Crawler : public Enemy {
 protected:
     bool shouldTurnAround(char** lvl, float cell_size) {
-        // Use absolute world coordinates (no scrolling adjustment needed)
-        float checkFront = (speed > 0) ? getRight() + 1 : getLeft() - 1;
-        float checkY = getBottom() - 5; // Check slightly above feet
-
-        // Convert to grid coordinates
-        int cellX = static_cast<int>(checkFront / cell_size);
-        int cellY = static_cast<int>(checkY / cell_size);
-
-        // Boundary check
-        if (cellX < 0 || cellX >= width /*|| cellY < 0 || cellY >= height*/)
+        float fro = (speed > 0) ? getRight() + 1 : getLeft() - 1;
+        float ycor = getBottom() - 5;
+        int cellX = static_cast<int>(fro / cell_size);
+        int cellY = static_cast<int>(ycor / cell_size);
+        if (cellX < 0 || cellX >= width )
             return true;
-
         return (lvl[cellY][cellX] == 'w' || lvl[cellY][cellX] == 'v');
     }
 public:
@@ -169,7 +164,6 @@ public:
             speed = -speed;
             faceright = !faceright;
         }
-
         x += speed;
         if (faceright == true) {
             texture.loadFromFile("Data/motobug.png");
@@ -201,7 +195,6 @@ public:
         texture.loadFromFile("Data/crabmeat2.png");
         sprite.setTexture(texture);
         sprite.setScale(1.0f, 1.0f);
-
         hitboxl = 0;       
         hitboxr = 100.0f;   
         hitboxt = 0;       
@@ -211,17 +204,11 @@ public:
         if (shouldTurnAround(lvl, cell_size)) {
             speed = -speed;
         }
-
         x += speed;
     }
     void updateposi(const Player* player, char** lvl, float cell_size) override {
         movement(lvl, cell_size);
-      
     }
-
- 
-    
-
 };
 
 
@@ -229,18 +216,12 @@ public:
 class Flyer : public Enemy {
 protected:
     bool shouldTurnAround(char** lvl, float cell_size) {
-        // Use absolute world coordinates (no scrolling adjustment needed)
-        float checkFront = (speed > 0) ? getRight() + 1 : getLeft() - 1;
-        float checkY = getBottom() - 5; // Check slightly above feet
-
-        // Convert to grid coordinates
-        int cellX = static_cast<int>(checkFront / cell_size);
-        int cellY = static_cast<int>(checkY / cell_size);
-
-        // Boundary check
-        if (cellX < 0 || cellX >= width /*|| cellY < 0 || cellY >= height*/)
+        float fro = (speed > 0) ? getRight() + 1 : getLeft() - 1;
+        float ycor = getBottom() - 5;
+        int cellX = static_cast<int>(fro / cell_size);
+        int cellY = static_cast<int>(ycor / cell_size);
+        if (cellX < 0 || cellX >= width || cellY < 0 || cellY >= height)
             return true;
-
         return (lvl[cellY][cellX] == 'w' || lvl[cellY][cellX] == 'v');
     }
 public:
@@ -272,7 +253,7 @@ public:
         }
         if (player->getXposition() < x) {
             x -= speed;
-    
+   
         }
         else {
             x += speed;
@@ -323,12 +304,9 @@ public:
     }
 
     void movement() override {
-
         x += speed;
-
         if (x < leftBound )
             speed = -speed; 
-
         y = startY + sin(angle) * 40; 
         angle += 0.05f;
     }
@@ -345,14 +323,20 @@ public:
 
 class EggStinger : public Flyer {
 private:
-    float timer;
-    Clock clock;
     bool goingdown;
-    float gdtime;
-    float xx;
-    float yy;
+    bool goingup;
+    Clock stateClock;
+    float idleTime;
+    float descendSpeed;
+    float ascendSpeed;
+    float targetY;
+    float targetX;
+    SoundBuffer bf;
+    Sound bs;
+
 public:
-    EggStinger(float x, float y, int w, int h): Flyer(x, y, 1.0f, 20, w, h),timer(0),goingdown(false),gdtime(10.0f),yy(6){
+    EggStinger(float x, float y, int w, int h)
+        : Flyer(x, y, 1.0f, 20, w, h), goingdown(false), goingup(false), idleTime(10.0f), descendSpeed(5.0f), ascendSpeed(3.0f), targetY(y), targetX(x) {
         texture.loadFromFile("Data/boss.png");
         sprite.setTexture(texture);
         sprite.setScale(1.0f, 1.0f);
@@ -360,32 +344,65 @@ public:
         hitboxr = 148.0f;
         hitboxt = 0;
         hitboxb = 128.0f;
-
-    }
-    void movement() override {
-        x += speed;
-        if (x < 200 || x > width * 64 - 200)
-            speed = -speed;
-        float elapsed = clock.getElapsedTime().asSeconds();
-        if (elapsed >= gdtime) {
-            clock.restart();
-            goingdown= true;
-            xx = x;
+        stateClock.restart();
+        if (!bf.loadFromFile("Data/Crumble.ogg")) {
+            std::cerr << "Failed to load wall break sound effect!\n";
         }
-        while (goingdown) {
-            y += 5.0f;
-            if (y >= yy) {
-                y =yy;
+        bs.setBuffer(bf);
+        bs.setVolume(70);
+    }
+
+    void movement() override {}
+
+    void updateposi(const Player* player, char** lvl, float cell_size) override {
+        if (!goingdown && !goingup) {
+            x += speed;
+            if (x < 200 || x > width * cell_size - 200) {
+                speed = -speed;
+            }
+            if (stateClock.getElapsedTime().asSeconds() >= idleTime) {
+                targetX = player->getXposition();
+                targetY = player->getYPosition();
+                goingdown = true;
+                stateClock.restart();
+            }
+        }
+        else if (goingdown) {
+            float dx = targetX - x;
+            float dy = targetY - y;
+            float distance = sqrt(dx * dx + dy * dy);
+            if (distance > 0) {
+                x += (dx / distance) * descendSpeed;
+                y += (dy / distance) * descendSpeed;
+            }
+            if (distance < descendSpeed) {
+                x = targetX;
+                y = targetY;
                 goingdown = false;
+                goingup = true;
+                stateClock.restart();
+                int col = static_cast<int>((x + hitboxr/2) / cell_size);
+                int row = static_cast<int>((y+hitboxb) / cell_size);
+                if (row >= 0 && row < height && col >= 0 && col < width) {
+                    cout << "yes" << endl;
+                    if (lvl[row][col] == 'w' ) {
+                        lvl[row][col] = 'p'; 
+                        bs.play();
+                    }
+                }
+            }
+        }
+        else if (goingup) {
+            y -= ascendSpeed;
+            if (y <= 250) {
+                y = 250;
+                goingup = false;
+                stateClock.restart();
             }
         }
     }
-    void updateposi(const Player* player, char** lvl, float cell_size) override {
-        movement();
-    }
-
-
 };
+
 
 
 class EnemyFactory {
@@ -405,4 +422,3 @@ public:
             return nullptr;
     }
 };
-

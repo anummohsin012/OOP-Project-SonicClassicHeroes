@@ -724,21 +724,6 @@ public:
     }
     virtual void trigger(RenderWindow& window, float offset = 0) override
     {
-        door.setScale(2.5f, 2.5f);
-        if (manager.getLeader()->getXposition() >= 290 * 64.f && manager.getLeader()->getXposition() <= 293 * 64.f && manager.getLeader()->getYPosition() <= 12 * 64 && manager.getLeader()->getYPosition() >= 10 * 64 && ringscollected == rings)
-        {
-            door.setPosition(291 * 64 - offset, 8.7 * 64);
-            door.setTexture(dooropen);
-            window.draw(door);
-            sleep(seconds(2));
-            lvlFinished = true;
-        }
-        else
-        {
-            door.setPosition(291 * 64-offset, 8.7 * 64);
-            door.setTexture(doorclosed);
-            window.draw(door);
-        }
     }
 };
 class BossLevel :public Levels {
@@ -837,7 +822,7 @@ class BossLevel :public Levels {
 };
 
 class LevelManager {
-    const int MAXLEVELS = 3;
+    const int MAXLEVELS = 4;
     Levels** levels = new Levels * [MAXLEVELS];
     int currentLevel;
     Timer timer;
@@ -954,9 +939,9 @@ int main()
     RenderWindow window(VideoMode(1200, 896), "Sonic Classic Heroes");
     Timer timer(120.0f);
     window.setFramerateLimit(60);
-    Level1 level1(timer);
+    BossLevel Bosslevel(timer);
 
-    level1.run(window); // Launch full game loop from Level1
+    Bosslevel.run(window); // Launch full game loop from Level1
 
     return 0;
 }

@@ -34,7 +34,7 @@ public:
         loadScores();
     }
 
-    void addScore(const std::string& name, int score) {
+    void addScore(const string& name, int score) {
         if (count <max) {
             names[count] = name;
             scores[count] = score;

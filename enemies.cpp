@@ -44,7 +44,6 @@ public:
                     alive = false;
                 }
             }
-            cout << hp << endl;
         }
     bool isAlive() const 
     {
@@ -185,7 +184,6 @@ public:
 };
 
 
-
 class Flyer : public Enemy {
 protected:
     bool shouldTurnAround(char** lvl, float cell_size) {
@@ -319,7 +317,7 @@ public:
         hitboxb = 128.0f;
         stateClock.restart();
         if (!bf.loadFromFile("Data/Crumble.ogg")) {
-            std::cerr << "Failed to load wall break sound effect!\n";
+            cout<< "Failed to load wall break sound effect!\n";
         }
         bs.setBuffer(bf);
         bs.setVolume(70);

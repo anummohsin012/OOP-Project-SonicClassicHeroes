@@ -848,7 +848,7 @@ public:
 };
 class BossLevel :public Levels {
 public:
-    BossLevel(Timer& timer) :Levels(14, 18, 25, 1, 1.2, 1, 120.0f, timer)
+    BossLevel(Timer& timer) :Levels(14, 18, 25, 1, 1.2, 1, 180.0f, timer)
     {
         levelIntroText.setString("BOSS LEVEL");
 
@@ -856,6 +856,8 @@ public:
         lvlSprite.setTexture(bossleveltex);
         lvlSprite.setScale(1.0f, 1.0f);
         lvlSprite.setTextureRect(IntRect(0, 0, width * 64, height * 64));
+        manager.addLife();
+        manager.addLife();
     }
     virtual void setObstaclesandCollectibles() override
     {

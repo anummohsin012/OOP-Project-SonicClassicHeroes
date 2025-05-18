@@ -80,6 +80,7 @@ public:
 	virtual void collect(char** lvl)
 	{
 		lvl[row][column] = ' ';
+		playSound();
 	}
 	~ ExtraLives(){}
 	virtual void playSound() {
@@ -109,6 +110,7 @@ public:
 	virtual void collect(char** lvl)
 	{
 		lvl[row][column] = ' ';
+		playSound();
 	}
 	virtual void playSound() {
 		static Music collisionmusic;

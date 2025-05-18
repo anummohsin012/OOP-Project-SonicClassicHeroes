@@ -10,7 +10,7 @@ class Menu {
 private:
 	Font font;
 	Text title;
-	Text menuoptions[5];
+	Text menuoptions[6];
 	bool optionsopen;
 	int index;
 	int volumelevel;
@@ -40,7 +40,7 @@ public:
 		title.setStyle(Text::Bold);
 		title.setCharacterSize(60);
 		title.setFillColor(Color::Blue);
-		title.setPosition(width - 260, height / 7);
+		title.setPosition(width - 600, height / 7);
 		vol.setFont(font);
 		vol.setCharacterSize(30);
 		vol.setFillColor(sf::Color::Cyan);
@@ -55,14 +55,14 @@ public:
 		selectsb.loadFromFile("Data/Select.ogg");
 		selectsound.setBuffer(selectsb);
 		// all menu options ka lia array hai and initalizing themm in a loop
-		string optionsarraay[5] = { "New Game", "Options", "Continue", "Leader Board", "Exit" };
-		for (int i = 0;i < 5;i++) {
+		string optionsarraay[6] = { "New Game", "Options", "Continue", "Leader Board","Help", "Exit" };
+		for (int i = 0;i < 6;i++) {
 			menuoptions[i].setFont(font);
 			menuoptions[i].setFillColor(Color::Red);
 			menuoptions[i].setString(optionsarraay[i]);
 			menuoptions[i].setStyle(Text::Bold);
 			menuoptions[i].setCharacterSize(40);
-			menuoptions[i].setPosition(width - 100, (height) / 4 - 50 + i * 80);
+			menuoptions[i].setPosition(width - 400, (height) / 3 - 50 + i * 80);
 		}
 	}
 
@@ -70,7 +70,7 @@ public:
 		window.draw(menusp);
 		if (!optionsopen) { //if option menu is open tall menu options can be seen else if option is oprn volum be seen
 			window.draw(title);
-			for (int i = 0; i < 5; ++i) {
+			for (int i = 0; i < 6; ++i) {
 				window.draw(menuoptions[i]);
 			}
 		}
@@ -124,13 +124,13 @@ public:
 	// to handle  the navigation of the menu 
 	void hower(int updown) {
 		if (!optionsopen) { 
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 6; i++) {
 				menuoptions[i].setFillColor(Color::Red);
 			}
 			index += updown; //up down
 			if (index < 0)
-				index = 4;
-			else if (index > 4)
+				index = 5;
+			else if (index > 5)
 				index = 0;
 			menuoptions[index].setFillColor(Color::Magenta);
 			hvsound.play();
@@ -212,6 +212,8 @@ public:
 			cout << "Leader Board pressed!" << endl;
 			break;
 		case 4:
+			cout << "Reading instructions manual!\n";
+		case 5:
 			exit(0);
 		}
 	}
@@ -223,3 +225,45 @@ public:
 
 
 };
+
+//int main() {
+//	const int WIDTH = 1200;
+//	const int HEIGHT = 896;
+//
+//	RenderWindow window(VideoMode(WIDTH, HEIGHT), "Menu Test");
+//	Menu menu(HEIGHT, WIDTH);
+//
+//	while (window.isOpen()) {
+//		Event event;
+//		while (window.pollEvent(event)) {
+//			if (event.type == Event::Closed)
+//				window.close();
+//
+//			if (event.type == Event::KeyPressed) {
+//				if (event.key.code == Keyboard::Up)
+//					menu.hower(-1);
+//				else if (event.key.code == Keyboard::Down)
+//					menu.hower(1);
+//				else if (event.key.code == Keyboard::Enter)
+//					menu.optionselected(menu.getindex(), window, HEIGHT, WIDTH);
+//				else if (event.key.code == Keyboard::Escape && menu.getoptionopen())
+//					menu.toggleing();
+//				else if (event.key.code == Keyboard::Right && menu.getoptionopen())
+//					menu.volset(1);
+//				else if (event.key.code == Keyboard::Left && menu.getoptionopen())
+//					menu.volset(0);
+//			}
+//		}
+//
+//		window.clear();
+//		menu.draw(window, HEIGHT, WIDTH);
+//		window.display();
+//
+//		if (menu.getcanstart()) {
+//			cout << "Starting game for player: " << menu.getPlayerName() << endl;
+//			break; // You can replace this with game start logic
+//		}
+//	}
+//
+//	return 0;
+//}

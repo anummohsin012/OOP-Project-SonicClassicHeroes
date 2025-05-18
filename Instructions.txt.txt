@@ -1,0 +1,16 @@
+Use Arrow keys to move sideways
+
+Use Space key to jump
+
+Use 'z' key to change characters
+
+Collect all the coins in the time limit for the door to open and take you
+to the next level!!
+
+Collect extra lives for durability and boosters to unlock special 
+abilities for a short duration!
+
+Special Abilities:
+Sonic: Speed+4
+Tails: Flying ability
+Knuckles: Invincibility

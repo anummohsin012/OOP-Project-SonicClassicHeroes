@@ -78,7 +78,7 @@ public:
         Text text;
         text.setFont(font);
         text.setCharacterSize(40);
-        text.setFillColor(sf::Color::White);
+        text.setFillColor(Color::Yellow);
 
         // Title
         text.setString("TOP 10 HIGH SCORES");

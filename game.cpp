@@ -1,7 +1,11 @@
+//Anum Mohsin i240756
+//Muhammad Usman i240528
+//Semester Project
 #include <SFML/Graphics.hpp>
 #include "menu.cpp"
 #include "levels.cpp"
 #include "leaderboard.cpp"
+#include "Instructions.cpp"
 
 using namespace sf;
 using namespace std;
@@ -76,9 +80,9 @@ private:
     string playerName; 
     ScoreBoard scoreBoard; //composes scoreboard  to display scores wara
     Leaderboard leaderboard; // composes leaderboard class to track high scores wara
-
+    Instructions instructions;
 public:
-    Game() : window(VideoMode(1200, 896), "Sonic Classic Heroes"),menu(1200, 896),levelManager(), gameState(0), playerName("Player"),scoreBoard(window)
+    Game() : window(VideoMode(1200, 896), "Sonic Classic Heroes"),menu(896, 1200),levelManager(), gameState(0), playerName("Player"),scoreBoard(window), instructions(1200,896)
     {}
 
     void run() { // handles all the runn that is called in the main loop
@@ -117,11 +121,15 @@ private:
                             else if (selected == 3) { 
                                 gameState = 3; 
                             }
-                            else if (selected == 4) { 
+                            else if (selected == 4) {
+                                gameState = 4;
+                            }
+
+                            else if (selected == 5) { 
                                 window.close();
                             }
                             else {
-                                menu.optionselected(selected, window, 900, 1200);
+                                menu.optionselected(selected, window, 896, 1200);
                             }
                         }
                     }
@@ -134,7 +142,7 @@ private:
                             menu.toggleing();
                     }
                 }
-                else if (gameState == 1 || gameState == 2 || gameState == 3) {
+                else if (gameState == 1 || gameState == 2 || gameState == 3||gameState==4) {
                     if (event.key.code == Keyboard::Escape) {
                         gameState = 0; 
                     }
@@ -193,11 +201,15 @@ private:
         else if (gameState == 3) {
             leaderboard.draw(window);
         }
+        else if (gameState == 4)
+        {
+            instructions.draw(window);
+        }
 
         window.display();
     }
 };
-// main gamee
+ //main gamee
 int main() {
     Game game;
     game.run();
